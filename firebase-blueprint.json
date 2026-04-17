@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information including state and onboarding status.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "state": { "type": "string", "description": "US State for tax/legal tips" },
+        "onboardingCompleted": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "A business venture project.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Owner UID" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["ideation", "architecting", "building", "testing", "deployed", "scaling"] },
+        "revenue": { "type": "number" },
+        "growth": { "type": "number" },
+        "prompt": { "type": "string" },
+        "recommendedModel": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "tasks": {
+          "type": "array",
+          "items": { "$ref": "Task" }
+        },
+        "branding": {
+          "type": "object",
+          "properties": {
+            "logoType": { "type": "string", "enum": ["monolith", "orbit", "prism"] },
+            "suggestedNames": { "type": "array", "items": { "type": "string" } },
+            "selectedName": { "type": "string" },
+            "missionStatement": { "type": "string" },
+            "suggestedMissionStatements": { "type": "array", "items": { "type": "string" } },
+            "tone": { "type": "string" },
+            "targetAudience": { "type": "string" },
+            "suggestedPalettes": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+            "selectedPalette": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["uid", "name", "status"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A specific task within a project.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "in-progress", "completed", "blocked"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
+        "category": { "type": "string", "enum": ["legal", "technical", "marketing", "financial", "operations"] },
+        "progress": { "type": "number" },
+        "dueDate": { "type": "string", "format": "date" }
+      },
+      "required": ["id", "title", "status", "priority", "category", "progress"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User private profile data"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Business projects"
+    }
+  }
+}

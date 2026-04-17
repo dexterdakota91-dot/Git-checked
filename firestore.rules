@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required) - Firebase Auth UID
+    //   - email: string (required) - User email
+    //   - displayName: string (optional) - User name
+    //   - photoURL: string (optional) - User photo
+    //   - state: string (optional) - US State
+    //   - onboardingCompleted: bool (optional) - Status
+    //   - createdAt: timestamp (optional) - Creation time
+    //
+    // Collection: projects
+    // Document ID: auto-generated
+    // Fields:
+    //   - uid: string (required) - Owner UID
+    //   - name: string (required) - Project name
+    //   - description: string (optional) - Description
+    //   - status: string (required) - ['ideation', 'architecting', 'building', 'testing', 'deployed', 'scaling']
+    //   - revenue: number (optional) - Revenue
+    //   - growth: number (optional) - Growth %
+    //   - prompt: string (optional) - Core prompt
+    //   - recommendedModel: string (optional) - AI Model
+    //   - createdAt: timestamp (optional) - Creation time
+    //   - tasks: list (optional) - Array of Task objects
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             (!('state' in data) || (data.state is string && data.state.size() <= 50)) &&
+             (!('onboardingCompleted' in data) || data.onboardingCompleted is bool);
+    }
+
+    function isValidTask(task) {
+      return task is map &&
+             task.keys().hasAll(['id', 'title', 'status', 'priority', 'category', 'progress']) &&
+             task.id is string && task.id.size() <= 50 &&
+             task.title is string && task.title.size() > 0 && task.title.size() <= 200 &&
+             task.status in ['pending', 'in-progress', 'completed', 'blocked'] &&
+             task.priority in ['low', 'medium', 'high', 'urgent'] &&
+             task.category in ['legal', 'technical', 'marketing', 'financial', 'operations'] &&
+             task.progress is number && task.progress >= 0 && task.progress <= 100;
+    }
+
+    function isValidBranding(branding) {
+      return branding is map &&
+             (!('logoType' in branding) || branding.logoType in ['monolith', 'orbit', 'prism']) &&
+             (!('selectedName' in branding) || (branding.selectedName is string && branding.selectedName.size() <= 100)) &&
+             (!('missionStatement' in branding) || (branding.missionStatement is string && branding.missionStatement.size() <= 500)) &&
+             (!('tone' in branding) || (branding.tone is string && branding.tone.size() <= 100)) &&
+             (!('targetAudience' in branding) || (branding.targetAudience is string && branding.targetAudience.size() <= 200));
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['uid', 'name', 'status']) &&
+             data.uid == request.auth.uid &&
+             data.name is string &&
+             data.status in ['ideation', 'architecting', 'building', 'testing', 'deployed', 'scaling'] &&
+             (!('createdAt' in data) || data.createdAt is string);
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "dexterdakota91@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && uidNotModified();
+    }
+
+    match /projects/{projectId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidProject(request.resource.data) && uidUnchanged();
+      allow update: if isDocOwner() && isValidProject(request.resource.data) && uidNotModified();
+      allow delete: if isDocOwner() || isAdmin();
+    }
+  }
+}

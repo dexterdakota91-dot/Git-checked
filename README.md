@@ -1,11 +1,21 @@
-<div align="center">
+# Aetheris Ventures
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Agentic Business Architect & Revenue Automation Engine.
 
-  <h1>Built with AI Studio</h2>
+## Run Locally
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+**Prerequisites:** Node.js
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+1. Install dependencies:
+   `npm install`
+2. Create a `.env.local` file and set `GEMINI_API_KEY`
+3. Optional: set `DEMO_MODE=true` if you want to test without full Stripe/Plaid setup
+4. Run the app:
+   `npm run dev`
 
-</div>
+## Run Production Build
+
+1. Build the frontend:
+   `npm run build`
+2. Start the production server:
+   `npm run start`

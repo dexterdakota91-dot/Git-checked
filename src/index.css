@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  
+  --color-background: #000000;
+  --color-foreground: #F5F5F0;
+  
+  --color-primary: #0066FF;
+  --color-primary-foreground: #ffffff;
+  
+  --color-secondary: #001A4D;
+  --color-secondary-foreground: #F5F5F0;
+  
+  --color-accent: #D4AF37;
+  --color-accent-foreground: #000000;
+  
+  --color-muted: #000D26;
+  --color-muted-foreground: #a3a3a3;
+  
+  --color-border: #1e293b;
+  --color-input: #001A4D;
+  --color-ring: #0099FF;
+
+  /* Shadcn matches */
+  --background: 0 0% 0%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3%;
+  --popover-foreground: 0 0% 98%;
+  --primary-shadcn: 217 91% 60%;
+  --primary-foreground-shadcn: 210 40% 98%;
+  --secondary-shadcn: 217 32% 17%;
+  --secondary-foreground-shadcn: 210 40% 98%;
+  --muted-shadcn: 217 32% 17%;
+  --muted-foreground-shadcn: 215 20% 65%;
+  --accent-shadcn: 217 32% 17%;
+  --accent-foreground-shadcn: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border-shadcn: 217 32% 17%;
+  --input-shadcn: 217 32% 17%;
+  --ring-shadcn: 224 76% 48%;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+.aetheris-card {
+  background: 
+    linear-gradient(#1C1C1C, #1C1C1C) padding-box,
+    linear-gradient(var(--angle, 0deg), #003399, #FFFFFF) border-box !important;
+  border: 1.5px solid transparent !important;
+  border-radius: 16px !important;
+  animation: rotate-gradient 4s linear infinite;
+  box-shadow: 0 0 8px rgba(0, 150, 255, 0.25);
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotate-gradient {
+  to { --angle: 360deg; }
+}
+
+.glass {
+  background: rgba(28, 28, 28, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.electric-glow {
+  box-shadow: 0 0 10px rgba(0, 150, 255, 0.25);
+  transition: all 0.3s ease;
+}
+
+.electric-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 150, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(0, 102, 255, 0.5); }
+  50% { text-shadow: 0 0 20px rgba(0, 102, 255, 0.8); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
