@@ -5,6 +5,8 @@
 
 import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useFirebaseListeners } from './hooks/useFirebaseListeners';
 import { AppShell } from './components/layout/AppShell';
@@ -21,6 +23,8 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AetherisApp />
+        <Analytics />
+        <SpeedInsights />
       </BrowserRouter>
     </ErrorBoundary>
   );
