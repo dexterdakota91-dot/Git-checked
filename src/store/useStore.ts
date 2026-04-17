@@ -3,7 +3,7 @@ import { Project, BusinessIdea } from '../types';
 import { User, signInWithPopup, signOut } from 'firebase/auth';
 import { auth, googleProvider, db, OperationType, handleFirestoreError } from '../lib/firebase';
 import { addDoc, collection, doc, updateDoc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
-import { generateBusinessIdeas, generateBranding, generateMissionStatements, generatePalettes, suggestTasks, specializeAgents, chatWithArchitect } from '../services/gemini';
+import { generateBusinessIdeas, generateRefinedTemplate, generateBranding, generateMissionStatements, generatePalettes, suggestTasks, specializeAgents, chatWithArchitect } from '../services/gemini';
 import { PREDEFINED_TEMPLATES } from '../constants/templates';
 
 interface AppState {
@@ -30,8 +30,12 @@ interface AppState {
   // Idea Lab State
   ideas: BusinessIdea[];
   setIdeas: (ideas: BusinessIdea[]) => void;
+  refinedTemplates: BusinessIdea[];
+  setRefinedTemplates: (templates: BusinessIdea[]) => void;
   isGenerating: boolean;
   setIsGenerating: (isGenerating: boolean) => void;
+  isTemplatesGenerating: boolean;
+  setIsTemplatesGenerating: (isGenerating: boolean) => void;
   
   // Chat State
   isChatLoading: boolean;
@@ -94,6 +98,7 @@ interface AppState {
   handleGenerateMissionStatements: () => Promise<void>;
   handleGeneratePalettes: () => Promise<void>;
   handleGenerateIdeas: () => Promise<void>;
+  handleGenerateRefinedTemplates: (count?: number) => Promise<void>;
   handleSendMessage: () => Promise<void>;
   addStripeIntegration: (projectId: string) => Promise<void>;
   handleUpdateTasks: (projectId: string, updatedTasks: any[]) => Promise<void>;
@@ -123,10 +128,14 @@ export const useStore = create<AppState>((set, get) => ({
   setSelectedProject: (project) => set({ selectedProject: project }),
   
   // Idea Lab State
-  ideas: PREDEFINED_TEMPLATES,
+  ideas: [],
   setIdeas: (ideas) => set({ ideas }),
+  refinedTemplates: PREDEFINED_TEMPLATES,
+  setRefinedTemplates: (refinedTemplates) => set({ refinedTemplates }),
   isGenerating: false,
   setIsGenerating: (isGenerating) => set({ isGenerating }),
+  isTemplatesGenerating: false,
+  setIsTemplatesGenerating: (isTemplatesGenerating) => set({ isTemplatesGenerating }),
   
   // Chat State
   isChatLoading: false,
@@ -243,7 +252,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   startProject: async (idea: BusinessIdea) => {
-    const { currentUser } = get();
+    const { currentUser, projects, refinedTemplates } = get();
     if (!currentUser) {
       set({ showOnboarding: true });
       return;
@@ -253,26 +262,38 @@ export const useStore = create<AppState>((set, get) => ({
       const newProjectRef = collection(db, 'projects');
       const docRef = await addDoc(newProjectRef, {
         uid: currentUser.uid,
-        name: idea.title,
-        description: idea.prompt,
+        name: idea.branding?.selectedName || idea.title,
+        description: idea.description,
         tags: idea.tags,
         status: 'ideation',
         healthScore: 100,
         createdAt: new Date().toISOString(),
         agents: [],
         tasks: [],
+        branding: idea.branding || null,
         logs: [{
           id: Date.now().toString(),
           timestamp: new Date().toISOString(),
           type: 'info',
-          message: `Project initialized: ${idea.title}`
+          message: `Project initialized: ${idea.branding?.selectedName || idea.title}`
         }]
       });
 
       const projectId = docRef.id;
 
+      // Handle template repopulation
+      const isTemplate = refinedTemplates.some(t => t.id === idea.id);
+      if (isTemplate) {
+        // Remove the used template
+        set(state => ({
+          refinedTemplates: state.refinedTemplates.filter(t => t.id !== idea.id)
+        }));
+        // Generate a replacement
+        get().handleGenerateRefinedTemplates(1);
+      }
+
       // Generate Tasks via Gemini
-      suggestTasks(idea.title, idea.prompt, 'ideation').then(async (tasks) => {
+      suggestTasks(idea.title, idea.description, 'ideation').then(async (tasks) => {
         if (tasks && tasks.length > 0) {
           const projectRef = doc(db, 'projects', projectId);
           await updateDoc(projectRef, { tasks });
@@ -280,7 +301,7 @@ export const useStore = create<AppState>((set, get) => ({
       });
 
       // Generate Agents via Gemini
-      specializeAgents(idea.title, idea.prompt).then(async (agents) => {
+      specializeAgents(idea.title, idea.description).then(async (agents) => {
         if (agents && agents.length > 0) {
           const projectRef = doc(db, 'projects', projectId);
           await updateDoc(projectRef, { agents });
@@ -372,11 +393,32 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const newIdeas = await generateBusinessIdeas();
       const { ideas } = get();
-      set({ ideas: [...newIdeas, ...PREDEFINED_TEMPLATES] });
+      set({ ideas: [...newIdeas, ...ideas] });
     } catch (error) {
       console.error("Idea generation failed", error);
     } finally {
       set({ isGenerating: false });
+    }
+  },
+
+  handleGenerateRefinedTemplates: async (count: number = 2) => {
+    const { userState } = get();
+    set({ isTemplatesGenerating: true });
+    try {
+      const newTemplates: BusinessIdea[] = [];
+      for (let i = 0; i < count; i++) {
+        const template = await generateRefinedTemplate(userState);
+        if (template) {
+          newTemplates.push({ ...template, id: `blueprint-${Date.now()}-${i}` });
+        }
+      }
+      set(state => ({
+        refinedTemplates: [...newTemplates, ...state.refinedTemplates]
+      }));
+    } catch (error) {
+      console.error("Template generation failed", error);
+    } finally {
+      set({ isTemplatesGenerating: false });
     }
   },
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { FileText, Shield, Scale } from 'lucide-react';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -45,6 +45,7 @@ export default function LegalView() {
               <p className="font-bold text-foreground">4. Limitation of Liability</p>
               <p>Aetheris Ventures shall not be liable for any direct, indirect, or consequential damages resulting from the use of the platform or generated businesses.</p>
             </div>
+            <DialogFooter showBackButton={true} />
           </DialogContent>
         </Dialog>
 
@@ -70,6 +71,7 @@ export default function LegalView() {
               <p className="font-bold text-foreground">3. Security</p>
               <p>We implement industry-standard security measures to protect your data. However, no system is 100% secure.</p>
             </div>
+            <DialogFooter showBackButton={true} />
           </DialogContent>
         </Dialog>
 
@@ -93,6 +95,7 @@ export default function LegalView() {
               <p className="font-bold text-foreground">Not Legal Advice</p>
               <p>State-specific tips are for informational purposes only and do not constitute legal or tax advice. Consult with a qualified professional in your jurisdiction.</p>
             </div>
+            <DialogFooter showBackButton={true} />
           </DialogContent>
         </Dialog>
       </div>

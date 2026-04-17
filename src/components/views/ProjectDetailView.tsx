@@ -226,9 +226,7 @@ export default function ProjectDetailView({
                     />
                   </div>
                   <div className="flex gap-2">
-                    <DialogClose nativeButton={true} render={
-                      <button className={buttonVariants({ variant: 'outline' })}>Cancel</button>
-                    } />
+                    <DialogClose className={buttonVariants({ variant: 'outline' })}>Cancel</DialogClose>
                     <Button variant="secondary" onClick={saveVentureDetails} className="electric-glow">Save Changes</Button>
                   </div>
                 </DialogFooter>

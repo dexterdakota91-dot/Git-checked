@@ -262,9 +262,7 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
                   </div>
                 </div>
                 <DialogFooter>
-                  <DialogClose nativeButton={true} render={
-                    <Button variant="outline">Cancel</Button>
-                  } />
+                  <DialogClose className={buttonVariants({ variant: 'outline' })}>Cancel</DialogClose>
                   <Button className="electric-glow" onClick={handleAddTask} disabled={!newTask.title}>
                     Create Task
                   </Button>
@@ -385,9 +383,7 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
                               </div>
 
                               <DialogFooter className="pt-4">
-                                <DialogClose nativeButton={true} render={
-                                  <Button variant="outline">Cancel</Button>
-                                } />
+                                <DialogClose className={buttonVariants({ variant: 'outline' })}>Cancel</DialogClose>
                                 <Button variant="outline" onClick={() => updateTaskStatus(task.id, 'blocked')}>Mark Blocked</Button>
                                 <Button 
                                   className="electric-glow"

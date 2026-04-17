@@ -49,8 +49,6 @@ export interface Project {
   agents: Agent[];
   tasks: Task[];
   logs: LogEntry[];
-  prompt: string;
-  recommendedModel: string;
   createdAt: string;
   outlook?: string;
   revenueStrategy?: string;
@@ -92,8 +90,6 @@ export interface BusinessIdea {
   id: string;
   title: string;
   description: string;
-  prompt: string;
-  model: string;
   potential: 'high' | 'medium' | 'low';
   tags: string[];
   outlook?: string;
@@ -108,4 +104,5 @@ export interface BusinessIdea {
     milestone: string;
     date: string;
   }[];
+  branding?: Project['branding'];
 }

@@ -62,15 +62,14 @@ export function OnboardingDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button 
-            variant="secondary"
-            className="w-full electric-glow relative overflow-hidden group" 
+          <button 
+            className="w-full monolith-btn-elevated relative overflow-hidden group" 
             disabled={!userState} 
             onClick={completeOnboarding}
           >
             <ElectricityTracer color="primary" duration={3} />
             <span className="relative z-10">Initialize Environment</span>
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

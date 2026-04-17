@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lightbulb, Palette, LayoutDashboard, Bot, BookOpen, ChevronRight } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 export function LandingPage({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -12,16 +12,18 @@ export function LandingPage({ setActiveTab }: { setActiveTab: (tab: string) => v
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Hero Section */}
         <div className="text-center space-y-6">
-          <h1 className="text-4xl md:text-6xl font-display font-bold tracking-tighter animate-pulse-glow">
-            Welcome to <span className="text-primary">Aetheris Ventures</span>
+          <h1 className="text-4xl md:text-6xl font-display font-bold tracking-tighter">
+            Welcome to
+            <br />
+            <span className="block text-primary mt-2 animate-pulse-glow">Aetheris Ventures</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Your AI-powered command center for brainstorming, architecting, and launching zero-capital businesses.
           </p>
           <div className="flex justify-center gap-4 pt-4">
-            <Button size="lg" className="electric-glow" onClick={() => setActiveTab('idea-lab')}>
-              Start a New Venture <ChevronRight className="ml-2" size={18} />
-            </Button>
+            <button className="monolith-btn-elevated group" onClick={() => setActiveTab('idea-lab')}>
+              Start a New Venture <ChevronRight className="ml-2 group-hover:translate-x-1 transition-transform" size={18} />
+            </button>
             <Button size="lg" variant="outline" onClick={() => setIsTermsOpen(true)}>
               <BookOpen className="mr-2" size={18} /> Term Definitions
             </Button>
@@ -120,6 +122,7 @@ export function LandingPage({ setActiveTab }: { setActiveTab: (tab: string) => v
               </ul>
             </div>
           </div>
+          <DialogFooter showBackButton={true} />
         </DialogContent>
       </Dialog>
     </div>

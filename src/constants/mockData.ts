@@ -8,8 +8,6 @@ export const INITIAL_PROJECTS: Project[] = [
     status: 'scaling',
     revenue: 0,
     growth: 0,
-    prompt: 'Build a system that identifies high-intent search keywords with low competition and automatically generates a landing page and basic tool for that niche.',
-    recommendedModel: 'gemini-2.0-flash',
     createdAt: new Date().toISOString(),
     agents: [
       { id: 'a1', name: 'Architect', role: 'Visionary & Strategy', status: 'idle', archetype: 'architect', debugMode: true },
@@ -59,8 +57,6 @@ export const INITIAL_PROJECTS: Project[] = [
     status: 'building',
     revenue: 0,
     growth: 0,
-    prompt: 'Develop a RAG (Retrieval-Augmented Generation) system that ingests a company\'s Zendesk/Intercom history and knowledge base, providing instant, accurate answers to customer queries via a chat widget.',
-    recommendedModel: 'gemini-2.0-flash',
     createdAt: new Date().toISOString(),
     agents: [
       { id: 'a4', name: 'Architect', role: 'Visionary & Strategy', status: 'idle', archetype: 'architect', debugMode: true },

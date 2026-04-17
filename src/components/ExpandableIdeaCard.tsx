@@ -8,28 +8,55 @@ import { BusinessIdea } from '../types';
 
 export const ExpandableIdeaCard: React.FC<{ idea: BusinessIdea, onInitiate: (idea: BusinessIdea) => void | Promise<void> }> = ({ idea, onInitiate }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const title = idea.branding?.selectedName || idea.title;
 
   return (
     <Card className="aetheris-card overflow-hidden group border-none">
-      <div className="h-2 bg-primary/30 w-full" />
+      <div 
+        className="h-2 w-full transition-colors duration-500" 
+        style={{ backgroundColor: idea.branding?.selectedPalette?.[0] || 'var(--primary)' }} 
+      />
       <CardHeader>
         <div className="flex justify-between items-start">
-          <CardTitle className="text-xl text-foreground">{idea.title}</CardTitle>
+          <CardTitle className="text-xl text-foreground">
+            {title}
+            {idea.branding?.selectedName && (
+              <span className="block text-[10px] text-muted-foreground font-normal mt-1 italic tracking-wide">
+                Blueprint: {idea.title}
+              </span>
+            )}
+          </CardTitle>
           <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 font-bold">
             {idea.potential} potential
           </Badge>
         </div>
-        <CardDescription className="text-muted-foreground">{idea.description}</CardDescription>
+        <CardDescription className="text-muted-foreground line-clamp-2">{idea.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recommended Model</p>
-          <div className="flex items-center gap-2 text-sm font-mono bg-background/50 p-2 rounded border border-accent/10">
-            <Cpu size={14} className="text-primary" />
-            {idea.model}
+        {idea.branding && (
+          <div className="p-3 rounded-xl bg-secondary/20 border border-primary/10 space-y-3">
+             <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Brand Identity</p>
+                <div className="flex gap-1">
+                  {idea.branding.selectedPalette?.map((c, i) => (
+                    <div key={i} className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+             </div>
+             <p className="text-xs italic text-foreground/80 leading-snug">"{idea.branding.missionStatement}"</p>
+             <div className="flex gap-4">
+                <div>
+                   <p className="text-[8px] uppercase text-muted-foreground font-bold">Audience</p>
+                   <p className="text-[10px] font-medium">{idea.branding.targetAudience}</p>
+                </div>
+                <div>
+                   <p className="text-[8px] uppercase text-muted-foreground font-bold">Tone</p>
+                   <p className="text-[10px] font-medium">{idea.branding.tone}</p>
+                </div>
+             </div>
           </div>
-        </div>
-        
+        )}
+
         <Button 
           variant="ghost" 
           size="sm" 
@@ -37,7 +64,7 @@ export const ExpandableIdeaCard: React.FC<{ idea: BusinessIdea, onInitiate: (ide
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? (
-            <>Hide Details <ChevronUp size={12} /></>
+            <>Hide Growth Data <ChevronUp size={12} /></>
           ) : (
             <>View Outlook & Strategy <ChevronDown size={12} /></>
           )}
@@ -77,27 +104,19 @@ export const ExpandableIdeaCard: React.FC<{ idea: BusinessIdea, onInitiate: (ide
           )}
         </AnimatePresence>
 
-        <div className="space-y-2 pt-2">
-          <div className="flex justify-between items-center">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Core Prompt</p>
-            <Badge variant="outline" className="text-[9px] border-primary/30 text-primary bg-primary/5">Advanced Engineering</Badge>
-          </div>
-          <div className="bg-background/50 p-3 rounded text-xs font-mono line-clamp-2 text-muted-foreground italic relative group/prompt">
-            "{idea.prompt}"
-            <div className="absolute inset-0 bg-background/90 opacity-0 group-hover/prompt:opacity-100 transition-opacity p-3 flex items-center justify-center text-center">
-              <span className="text-[10px] text-primary font-bold">Uses Chain-of-Thought & Role-Based Framing</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           {(idea.tags || []).map(tag => (
             <Badge key={tag} variant="outline" className="text-[10px] border-accent/20">{tag}</Badge>
           ))}
         </div>
-        <Button variant="secondary" className="w-full mt-4 group-hover:electric-glow transition-all" onClick={() => onInitiate(idea)}>
+        
+        <button 
+          className="monolith-btn-elevated w-full mt-4 flex items-center justify-center py-2 px-4 rounded-xl font-bold transition-all" 
+          onClick={() => onInitiate(idea)}
+        >
           Initiate Project <ChevronRight size={16} className="ml-2" />
-        </Button>
+        </button>
       </CardContent>
     </Card>
   );
-}
+};
