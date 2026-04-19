@@ -50,8 +50,32 @@ export interface FirestoreErrorInfo {
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   console.error(`Firestore Error [${operationType}] at ${path}:`, error);
+  
+  let errorMessage = "Unknown error";
+  if (typeof error === 'string') {
+    errorMessage = error;
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
+  } else if (typeof error === 'object' && error !== null) {
+    if ('message' in error && typeof (error as any).message === 'string') {
+      errorMessage = (error as any).message;
+    } else {
+      try {
+        errorMessage = JSON.stringify(error);
+      } catch (e) {
+        errorMessage = "Un-stringifiable error object";
+      }
+    }
+  } else {
+    try {
+      errorMessage = Object.prototype.toString.call(error);
+    } catch (e) {
+      errorMessage = "Un-stringifiable error primitive";
+    }
+  }
+
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errorMessage,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,

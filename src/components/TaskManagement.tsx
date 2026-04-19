@@ -348,7 +348,7 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
                                   <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Status</p>
                                   <div className="flex items-center gap-2">
                                     {getStatusIcon(task.status)}
-                                    <span className="capitalize text-sm font-medium">{task.status.replace('-', ' ')}</span>
+                                    <span className="capitalize text-sm font-medium">{task.status?.replace('-', ' ') || 'Unknown'}</span>
                                   </div>
                                 </div>
                                 <div className="space-y-1">
@@ -382,15 +382,19 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
                                 )}
                               </div>
 
-                              <DialogFooter className="pt-4">
-                                <DialogClose className={buttonVariants({ variant: 'outline' })}>Cancel</DialogClose>
-                                <Button variant="outline" onClick={() => updateTaskStatus(task.id, 'blocked')}>Mark Blocked</Button>
-                                <Button 
-                                  className="electric-glow"
+                              <DialogFooter className="pt-4 flex items-center justify-end gap-2">
+                                <DialogClose className={buttonVariants({ variant: 'outline' })}>
+                                  Cancel
+                                </DialogClose>
+                                <DialogClose className={buttonVariants({ variant: 'outline' })} onClick={() => updateTaskStatus(task.id, 'blocked')}>
+                                  Mark Blocked
+                                </DialogClose>
+                                <DialogClose 
+                                  className={cn(buttonVariants({ variant: 'default' }), "electric-glow")}
                                   onClick={() => updateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
                                 >
                                   {task.status === 'completed' ? 'Mark as Incomplete' : 'Mark Task as Done'}
-                                </Button>
+                                </DialogClose>
                               </DialogFooter>
                             </DialogContent>
                           </Dialog>

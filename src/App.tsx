@@ -12,6 +12,7 @@ import { useFirebaseListeners } from './hooks/useFirebaseListeners';
 import { AppShell } from './components/layout/AppShell';
 import { ArchitectChat } from './components/ArchitectChat';
 import { OnboardingDialog } from './components/OnboardingDialog';
+import { DynamicThemeProvider } from './components/DynamicThemeProvider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useStore } from './store/useStore';
@@ -20,13 +21,15 @@ import { db, handleFirestoreError, OperationType } from './lib/firebase';
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <AetherisApp />
-        <Analytics />
-        <SpeedInsights />
-      </BrowserRouter>
-    </ErrorBoundary>
+    <>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <AetherisApp />
+        </BrowserRouter>
+      </ErrorBoundary>
+      <Analytics />
+      <SpeedInsights />
+    </>
   );
 }
 
@@ -100,7 +103,7 @@ function AetherisApp() {
   };
 
   return (
-    <>
+    <DynamicThemeProvider>
       <AppShell />
 
       {/* Architect Chat Slide-out */}
@@ -151,6 +154,6 @@ function AetherisApp() {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </DynamicThemeProvider>
   );
 }

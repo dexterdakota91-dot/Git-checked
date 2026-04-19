@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { SidebarContent } from './SidebarContent';
+import { AIAcknowlegementFooter } from './AIAcknowlegementFooter';
 import { Search, Plus, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,12 +16,13 @@ const AnalyticsView = React.lazy(() => import('../views/AnalyticsView'));
 const AgentsView = React.lazy(() => import('../views/AgentsView'));
 const IdeaLabView = React.lazy(() => import('../views/IdeaLabView'));
 const BrandingView = React.lazy(() => import('../views/BrandingView'));
+const GlossaryView = React.lazy(() => import('../views/GlossaryView'));
 const LegalView = React.lazy(() => import('../views/LegalView'));
 const BankView = React.lazy(() => import('../views/BankView'));
 const VentureDashboardView = React.lazy(() => import('../views/VentureDashboardView'));
 const ProjectDetailView = React.lazy(() => import('../views/ProjectDetailView'));
 const ChatView = React.lazy(() => import('../views/ChatView'));
-import { LandingPage } from '../LandingPage';
+const LandingPage = React.lazy(() => import('../LandingPage').then(module => ({ default: module.LandingPage })));
 
 export function AppShell() {
   const { 
@@ -47,13 +49,15 @@ export function AppShell() {
   if (currentTab === 'landing') {
     return (
       <main className="min-h-screen bg-background relative overflow-hidden flex flex-col">
-        <LandingPage setActiveTab={handleSetActiveTab} />
+        <React.Suspense fallback={<div className="flex h-screen items-center justify-center">Loading AI Studio...</div>}>
+          <LandingPage setActiveTab={handleSetActiveTab} />
+        </React.Suspense>
       </main>
     );
   }
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex h-dvh bg-background text-foreground overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-white/10 hidden lg:block custom-scrollbar bg-black/20 backdrop-blur-xl">
         <SidebarContent 
@@ -107,14 +111,9 @@ export function AppShell() {
             
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-semibold font-display capitalize hidden sm:block">
-                {currentTab.replace('-', ' ')}
+                {currentTab?.replace('-', ' ') || 'Unknown'}
               </h2>
             </div>
-            {selectedProject && currentTab === 'project-detail' && (
-              <Badge variant="outline" className="border-primary/30 text-primary max-w-[120px] sm:max-w-none truncate aetheris-card px-3 py-1">
-                {selectedProject.name}
-              </Badge>
-            )}
           </div>
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer" onClick={() => handleSetActiveTab('landing')}>
@@ -135,15 +134,26 @@ export function AppShell() {
           </div>
         </header>
 
+        {/* Subheader for active venture context */}
+        {selectedProject && (
+          <div className="h-10 border-b border-white/10 bg-secondary/20 flex items-center px-4 lg:px-8 gap-3 shrink-0">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active Venture</span>
+            <Badge variant="outline" className="border-primary/30 text-primary truncate max-w-[200px] sm:max-w-md aetheris-card px-2 py-0.5">
+              {selectedProject.name}
+            </Badge>
+          </div>
+        )}
+
         {/* View Content */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-8">
           <React.Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
             <Routes>
               <Route path="/idea-lab" element={<IdeaLabView setActiveTab={handleSetActiveTab} />} />
               <Route path="/dashboard" element={<DashboardView projects={projects} selectedProject={selectedProject} setActiveTab={handleSetActiveTab} setSelectedProject={(p) => useStore.getState().setSelectedProject(p)} />} />
-              <Route path="/analytics" element={<AnalyticsView selectedProject={selectedProject} />} />
+              <Route path="/analytics" element={<AnalyticsView projects={projects} />} />
               <Route path="/agents" element={<AgentsView selectedProject={selectedProject} />} />
               <Route path="/branding" element={<BrandingView />} />
+              <Route path="/glossary" element={<GlossaryView />} />
               <Route path="/legal" element={<LegalView />} />
               <Route path="/bank" element={<BankView />} />
               <Route path="/venture-dashboard" element={<VentureDashboardView selectedProject={selectedProject} setActiveTab={handleSetActiveTab} />} />
@@ -161,6 +171,7 @@ export function AppShell() {
               <Route path="*" element={<LandingPage setActiveTab={handleSetActiveTab} />} />
             </Routes>
           </React.Suspense>
+          <AIAcknowlegementFooter />
         </div>
       </main>
     </div>

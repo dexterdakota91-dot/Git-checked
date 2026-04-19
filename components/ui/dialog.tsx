@@ -44,7 +44,9 @@ function DialogContent({
 }: DialogPrimitive.Popup.Props) {
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogPrimitive.Close data-slot="dialog-close" type="button" className="fixed inset-0 cursor-default">
+        <DialogOverlay />
+      </DialogPrimitive.Close>
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
@@ -71,14 +73,12 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function DialogFooter({
-  className,
+function DialogFooter({ 
+  className, 
+  children, 
   showBackButton = false,
-  children,
-  ...props
-}: React.ComponentProps<"div"> & {
-  showBackButton?: boolean
-}) {
+  ...props 
+}: React.ComponentProps<"div"> & { showBackButton?: boolean }) {
   return (
     <div
       data-slot="dialog-footer"
@@ -89,7 +89,13 @@ function DialogFooter({
       {...props}
     >
       {showBackButton && (
-        <DialogClose className={buttonVariants({ variant: 'ghost' })}>Back</DialogClose>
+        <DialogPrimitive.Close
+          data-slot="dialog-close"
+          type="button"
+          className={cn(buttonVariants({ variant: 'ghost' }), "relative z-[105] cursor-pointer")}
+        >
+          Back
+        </DialogPrimitive.Close>
       )}
       <div className="flex flex-col-reverse gap-2 sm:flex-row">
         {children}

@@ -34,7 +34,7 @@ interface DashboardViewProps {
   setSelectedProject: (project: Project | null) => void;
 }
 
-export function DashboardView({ projects, selectedProject, setActiveTab, setSelectedProject }: DashboardViewProps) {
+export default function DashboardView({ projects, selectedProject, setActiveTab, setSelectedProject }: DashboardViewProps) {
   return (
     <motion.div
       key="dashboard"

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Bot, MessageSquare, Zap } from 'lucide-react';
+import { Bot, MessageSquare, Zap, AlertCircle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -8,30 +8,55 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { LoadingIndicator } from '../LoadingIndicator';
+import { useStore } from '../../store/useStore';
 
-interface ChatViewProps {
-  chatMessages: any[];
-  chatInput: string;
-  setChatInput: (input: string) => void;
-  handleSendMessage: () => void;
-  isChatLoading: boolean;
-}
+export default function ChatView() {
+  const { 
+    chatMessages, 
+    chatInput, 
+    setChatInput, 
+    handleSendMessage, 
+    isChatLoading,
+    selectedProject,
+    setActiveTab
+  } = useStore();
 
-export default function ChatView({
-  chatMessages,
-  chatInput,
-  setChatInput,
-  handleSendMessage,
-  isChatLoading
-}: ChatViewProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  // Check if any agent is waiting for input
+  const waitingAgent = selectedProject?.agents?.find(a => a.status === 'waiting-for-input');
+
   return (
     <motion.div
       key="chat"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="max-w-3xl mx-auto h-[calc(100vh-120px)] flex flex-col"
+      className="max-w-3xl mx-auto h-[calc(100vh-120px)] flex flex-col gap-4"
     >
+      {waitingAgent && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="flex gap-3 items-center">
+            <AlertCircle size={24} className="animate-pulse" />
+            <div>
+              <p className="font-bold text-sm">Agent Blocked: {waitingAgent.name}</p>
+              <p className="text-xs">{waitingAgent.currentTask || 'An agent requires your input to proceed.'}</p>
+            </div>
+          </div>
+          <Button 
+            size="sm" 
+            className="bg-amber-500 hover:bg-amber-600 text-white shrink-0"
+            onClick={() => setActiveTab('agents')}
+          >
+            Resolve in Agents
+          </Button>
+        </div>
+      )}
+
       <Card className="flex-1 aetheris-card flex flex-col overflow-hidden border-none">
         <CardHeader className="border-b border-accent/10 bg-background/20">
           <div className="flex items-center gap-3">
@@ -71,6 +96,7 @@ export default function ChatView({
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
         </CardContent>

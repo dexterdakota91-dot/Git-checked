@@ -2,13 +2,15 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Project } from '../../types';
 import { AgentCard } from '../AgentCard';
+import { useStore } from '../../store/useStore';
 
 interface AgentsViewProps {
-  projects: Project[];
-  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+  selectedProject?: Project | null;
 }
 
-export default function AgentsView({ projects, setProjects }: AgentsViewProps) {
+export default function AgentsView({ selectedProject }: AgentsViewProps) {
+  const { projects, setProjects } = useStore();
+
   return (
     <motion.div
       key="agents"
@@ -18,15 +20,15 @@ export default function AgentsView({ projects, setProjects }: AgentsViewProps) {
       className="space-y-8"
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {projects.length > 0 ? projects.flatMap(p => p.agents.map(agent => (
+        {selectedProject && selectedProject.agents.length > 0 ? selectedProject.agents.map(agent => (
           <AgentCard 
-            key={`${p.id}-${agent.id}`} 
+            key={`${selectedProject.id}-${agent.id}`} 
             agent={agent} 
-            projectId={p.id} 
+            projectId={selectedProject.id} 
             projects={projects} 
             setProjects={setProjects} 
           />
-        ))) : (
+        )) : (
           <div className="col-span-3 text-center py-20 text-muted-foreground">
             No active agents. Initiate a project to see your agent stack.
           </div>

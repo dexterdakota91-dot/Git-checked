@@ -9,7 +9,7 @@ export interface Agent {
   id: string;
   name: string;
   role: string;
-  status: 'idle' | 'working' | 'completed' | 'error';
+  status: 'idle' | 'working' | 'busy' | 'completed' | 'error' | 'waiting-for-input' | 'thinking';
   currentTask?: string;
   avatar?: string;
   archetype?: string;
@@ -71,7 +71,7 @@ export interface Project {
     suggestedMissionStatements?: string[];
     tone?: string;
     targetAudience?: string;
-    suggestedPalettes?: string[][];
+    suggestedPalettes?: Array<{ colors: string[] }>;
     selectedPalette?: string[];
     logoDescription?: string;
   };

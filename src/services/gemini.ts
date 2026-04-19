@@ -177,6 +177,57 @@ export const suggestTasks = async (ventureTitle: string, ventureDescription: str
   return extractJson(result);
 };
 
+export const generateNames = async (ventureTitle: string, ventureDescription: string) => {
+  const prompt = `For the following venture:
+  Description: ${ventureDescription}
+
+  Generate 6 highly creative, unique, and compelling brand names.
+  Return the response as a JSON array of strings.`;
+
+  const systemInstruction = "You are the Aetheris Ventures Naming Specialist. Return ONLY a valid JSON array of strings.";
+  const fallback = ["Aetheris", "Nova", "Flux", "Apex", "Zenith", "Vortex"];
+
+  const result = await callAi(prompt, systemInstruction, JSON.stringify(fallback));
+  return extractJson(result);
+};
+
+export const generateLogoConcepts = async (ventureTitle: string, ventureDescription: string) => {
+  const prompt = `For the following venture:
+  Title: ${ventureTitle}
+  Description: ${ventureDescription}
+
+  Generate 3 distinct, professional logo concepts. The logo design should be represented as a conceptual blueprint, not actual images.
+  Return the response as a JSON array of objects, each containing:
+  - conceptName: A title for this logo style (e.g. "The Minimalist Monogram").
+  - description: A detailed, vivid description of how the logo looks, including shapes, layout, and visual metaphors.
+  - typographyStyle: A short description of the font style (e.g. "Bold Sans-serif", "Elegant Serif").`;
+
+  const systemInstruction = "You are the Aetheris Ventures Lead Designer. Return ONLY a valid JSON array of objects.";
+  const fallback = [
+    { conceptName: "Geometric Horizon", description: "A clean, modern geometric shape intersecting with a horizontal line, representing forward momentum and stability.", typographyStyle: "Modern minimalist sans-serif" }
+  ];
+
+  const result = await callAi(prompt, systemInstruction, JSON.stringify(fallback));
+  return extractJson(result);
+};
+
+export const generateVoiceAndTone = async (ventureTitle: string, ventureDescription: string) => {
+  const prompt = `For the following venture:
+  Title: ${ventureTitle}
+  Description: ${ventureDescription}
+
+  Identify the ideal brand voice and target audience. 
+  Return the response as a JSON object with two keys:
+  - tone: A concise string describing the tone (e.g., "Professional, authoritative, yet approachable").
+  - targetAudience: A concise string describing the primary audience.`;
+
+  const systemInstruction = "You are the Aetheris Ventures Brand Strategist. Return ONLY a valid JSON object.";
+  const fallback = { tone: "Professional and visionary", targetAudience: "Tech-savvy entrepreneurs" };
+
+  const result = await callAi(prompt, systemInstruction, JSON.stringify(fallback));
+  return extractJson(result);
+};
+
 export const generateBranding = async (ventureTitle: string, ventureDescription: string) => {
   const prompt = `For the following venture:
   Title: ${ventureTitle}
@@ -200,7 +251,7 @@ export const generateBranding = async (ventureTitle: string, ventureDescription:
     suggestedMissionStatements: ["AI-first business building.", "Automating the future of entrepreneurship."],
     tone: "Bold, Technical, Visionary",
     targetAudience: "Tech-savvy entrepreneurs",
-    suggestedPalettes: [["#0066FF", "#001A4D", "#D4AF37"]],
+    suggestedPalettes: [{ colors: ["#0066FF", "#001A4D", "#D4AF37"] }],
     logoDescription: "A minimalist, geometric representation of a neural network."
   };
 
@@ -232,10 +283,10 @@ export const generatePalettes = async (ventureTitle: string, ventureDescription:
   Generate 6 professional color palettes that reflect this brand's identity.
   Each palette MUST be an array of 3 hex codes: [primary, secondary, accent].
 
-  Return the response as a JSON array of arrays of strings.`;
+  Return the response as a JSON array of objects with the key 'colors' containing the array of 3 hex codes.`;
 
-  const systemInstruction = "You are the Aetheris Ventures Color Expert. Return ONLY a valid JSON array of arrays.";
-  const fallback = [["#0066FF", "#001A4D", "#D4AF37"]];
+  const systemInstruction = "You are the Aetheris Ventures Color Expert. Return ONLY a valid JSON array of objects with the key 'colors'.";
+  const fallback = [{ colors: ["#0066FF", "#001A4D", "#D4AF37"] }];
 
   const result = await callAi(prompt, systemInstruction, JSON.stringify(fallback));
   return extractJson(result);

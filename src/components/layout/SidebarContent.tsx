@@ -5,10 +5,12 @@ import {
   LayoutDashboard, 
   TrendingUp, 
   Users, 
-  Building2, 
-  FileText, 
-  Trash2, 
-  Settings, 
+  Building2,
+  FileText,
+  BookOpen,
+  Scale,
+  Trash2,
+  Settings,
   X 
 } from 'lucide-react';
 import { User } from 'firebase/auth';
@@ -131,8 +133,14 @@ export function SidebarContent({
           onClick={() => setActiveTab('bank')} 
         />
         <NavItem 
-          icon={<FileText size={20} />} 
-          label="Legal & Compliance" 
+          icon={<BookOpen size={20} />} 
+          label="Knowledge Base" 
+          active={activeTab === 'glossary'} 
+          onClick={() => setActiveTab('glossary')} 
+        />
+        <NavItem 
+          icon={<Scale size={20} />} 
+          label="Legal Center" 
           active={activeTab === 'legal'} 
           onClick={() => setActiveTab('legal')} 
         />
