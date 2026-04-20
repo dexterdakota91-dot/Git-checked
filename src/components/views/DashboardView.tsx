@@ -82,14 +82,14 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard 
               title="Total Revenue" 
-              value={`${projects.reduce((acc, p) => acc + p.revenue, 0).toLocaleString()}`} 
+              value={`${projects.reduce((acc, p) => acc + (p.revenue || 0), 0).toLocaleString()}`} 
               trend="+12.5%" 
               icon={<DollarSign className="text-primary" />} 
               withBeam
             />
             <StatCard 
               title="Active Agents" 
-              value={projects.reduce((acc, p) => acc + p.agents.length, 0).toString()} 
+              value={projects.reduce((acc, p) => acc + (p.agents?.length || 0), 0).toString()} 
               trend="Running" 
               icon={<Users className="text-accent" />} 
             />
@@ -103,13 +103,14 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
 
           {/* Charts & Activity */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-2 aetheris-card">
+            <Card className="lg:col-span-2 aetheris-card min-w-0">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Revenue Growth</CardTitle>
               </CardHeader>
-              <CardContent className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={REVENUE_DATA}>
+              <CardContent className="h-[200px] relative min-w-0">
+                <div className="absolute inset-0 pb-6 pr-6 pl-2 pt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={REVENUE_DATA}>
                     <defs>
                       <linearGradient id="colorValueDash" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#0066FF" stopOpacity={0.3}/>
@@ -125,7 +126,8 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
                     />
                     <Area type="monotone" dataKey="value" stroke="#0066FF" fillOpacity={1} fill="url(#colorValueDash)" strokeWidth={2} />
                   </AreaChart>
-                </ResponsiveContainer>
+                  </ResponsiveContainer>
+                </div>
               </CardContent>
             </Card>
 

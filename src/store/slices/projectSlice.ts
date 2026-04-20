@@ -53,6 +53,8 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
         tags: idea.tags,
         status: 'ideation',
         healthScore: 100,
+        revenue: 0,
+        growth: 0,
         createdAt: new Date().toISOString(),
         agents: [],
         tasks: [],

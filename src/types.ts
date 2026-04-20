@@ -46,6 +46,7 @@ export interface Project {
   status: ProjectStatus;
   revenue: number;
   growth: number;
+  healthScore?: number;
   agents: Agent[];
   tasks: Task[];
   logs: LogEntry[];

@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { SidebarContent } from './SidebarContent';
+import { ArchitectChat } from '../ArchitectChat';
 import { AIAcknowlegementFooter } from './AIAcknowlegementFooter';
 import { Search, Plus, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -48,7 +49,7 @@ export function AppShell() {
 
   if (currentTab === 'landing') {
     return (
-      <main className="min-h-screen bg-background relative overflow-hidden flex flex-col">
+      <main className="h-full bg-background relative overflow-hidden flex flex-col">
         <React.Suspense fallback={<div className="flex h-screen items-center justify-center">Loading AI Studio...</div>}>
           <LandingPage setActiveTab={handleSetActiveTab} />
         </React.Suspense>
@@ -57,9 +58,9 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex h-dvh bg-background text-foreground overflow-hidden">
+    <div className="flex w-full h-full bg-background text-foreground overflow-hidden selection:bg-primary/30">
       {/* Desktop Sidebar */}
-      <aside className="w-64 border-r border-white/10 hidden lg:block custom-scrollbar bg-black/20 backdrop-blur-xl">
+      <aside className="w-64 flex-shrink-0 border-r border-white/10 hidden lg:block custom-scrollbar bg-black/20 backdrop-blur-xl">
         <SidebarContent 
           activeTab={currentTab} 
           setActiveTab={handleSetActiveTab} 
@@ -77,7 +78,7 @@ export function AppShell() {
         />
       </aside>
 
-      <main className="flex-1 relative overflow-hidden flex flex-col">
+      <main className="flex-1 min-w-0 relative overflow-hidden flex flex-col">
         {/* Header */}
         <header className="h-16 border-b border-white/10 flex items-center justify-between px-4 lg:px-8 bg-background/50 backdrop-blur-md z-10 relative">
           <div className="flex items-center gap-4">
@@ -174,6 +175,9 @@ export function AppShell() {
           <AIAcknowlegementFooter />
         </div>
       </main>
+
+      {/* Architect Chat Slide-out - Contained within overflow-hidden root */}
+      <ArchitectChat />
     </div>
   );
 }

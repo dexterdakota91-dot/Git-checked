@@ -40,7 +40,9 @@ export function useFirebaseListeners() {
 
   // Firestore Projects Listener
   useEffect(() => {
-    if (!currentUser || !isAuthReady) {
+    if (!isAuthReady) return;
+    
+    if (!currentUser) {
       setProjects([]);
       return;
     }

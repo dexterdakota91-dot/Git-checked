@@ -105,12 +105,12 @@ export default function ProjectDetailView({
             <div className="w-48 space-y-1">
               <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wider">
                 <span>Progress</span>
-                <span>{Math.round((selectedProject.tasks.filter(t => t.status === 'completed').length / (selectedProject.tasks.length || 1)) * 100)}%</span>
+                <span>{Math.round(((selectedProject.tasks?.filter(t => t.status === 'completed').length || 0) / (selectedProject.tasks?.length || 1)) * 100)}%</span>
               </div>
               <div className="h-1.5 w-full bg-accent/20 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-primary transition-all duration-500" 
-                  style={{ width: `${(selectedProject.tasks.filter(t => t.status === 'completed').length / (selectedProject.tasks.length || 1)) * 100}%` }} 
+                  style={{ width: `${((selectedProject.tasks?.filter(t => t.status === 'completed').length || 0) / (selectedProject.tasks?.length || 1)) * 100}%` }} 
                 />
               </div>
             </div>
@@ -240,7 +240,7 @@ export default function ProjectDetailView({
             <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Agent Stack</p>
             <p className="text-xs font-medium text-primary">Live Monitoring</p>
           </div>
-          <MonolithLogo size={50} agents={selectedProject.agents} logoType={selectedProject.branding?.logoType} />
+          <MonolithLogo size={50} agents={selectedProject.agents || []} logoType={selectedProject.branding?.logoType} />
         </div>
       </div>
 
@@ -249,7 +249,7 @@ export default function ProjectDetailView({
         <div className="lg:col-span-2 space-y-8">
           {/* Agents Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {selectedProject.agents.map(agent => (
+            {(selectedProject.agents || []).map(agent => (
               <AgentCard 
                 key={agent.id} 
                 agent={agent} 
@@ -278,8 +278,8 @@ export default function ProjectDetailView({
             <CardContent>
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-4 font-mono text-[11px]">
-                  {selectedProject.logs.map(log => {
-                    const agent = selectedProject.agents.find(a => a.id === log.agentId);
+                  {(selectedProject.logs || []).map(log => {
+                    const agent = (selectedProject.agents || []).find(a => a.id === log.agentId);
                     if ((log.type === 'thought' || log.type === 'decision') && !agent?.debugMode) return null;
                     
                     return (
@@ -340,12 +340,12 @@ export default function ProjectDetailView({
               <div className="flex justify-between items-end">
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Projected ARR</p>
-                  <p className="text-2xl font-bold text-primary">${(selectedProject.revenue * 12).toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-primary">${((selectedProject.revenue || 0) * 12).toLocaleString()}</p>
                 </div>
                 <div className="flex flex-col gap-2 items-end">
                   <Badge className="bg-primary text-primary-foreground electric-glow">Scalable</Badge>
                   <div className="flex gap-2">
-                    {!selectedProject.tasks.find(t => t.title === 'Stripe Integration') && (
+                    {!(selectedProject.tasks || []).find(t => t.title === 'Stripe Integration') && (
                       <Button size="xs" variant="outline" className="text-[10px] h-7 border-accent/30 text-accent hover:bg-accent/10" onClick={() => addStripeIntegration(selectedProject.id)}>
                         <CreditCard size={12} className="mr-1" /> Add Stripe
                       </Button>

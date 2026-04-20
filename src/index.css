@@ -49,10 +49,17 @@
   * {
     border-color: var(--color-border);
   }
-  body {
+  html, body, #root {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    overflow: hidden !important;
+    height: 100% !important;
+    width: 100% !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    -webkit-overflow-scrolling: touch;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);

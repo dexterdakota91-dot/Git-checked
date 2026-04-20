@@ -37,7 +37,7 @@ export default function AnalyticsView({ projects }: AnalyticsViewProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           title="Total Portfolio Value" 
-          value={`$${(projects.reduce((acc, p) => acc + p.revenue, 0) * 12).toLocaleString()}`} 
+          value={`$${(projects.reduce((acc, p) => acc + (p.revenue || 0), 0) * 12).toLocaleString()}`} 
           trend="+18.2%" 
           icon={<DollarSign className="text-primary" />} 
           withBeam
@@ -50,7 +50,7 @@ export default function AnalyticsView({ projects }: AnalyticsViewProps) {
         />
         <StatCard 
           title="Total Active Agents" 
-          value={projects.reduce((acc, p) => acc + p.agents.length, 0).toString()} 
+          value={projects.reduce((acc, p) => acc + (p.agents?.length || 0), 0).toString()} 
           trend="Running" 
           icon={<Users className="text-accent" />} 
         />
@@ -58,30 +58,32 @@ export default function AnalyticsView({ projects }: AnalyticsViewProps) {
 
       {/* Charts & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 glass border-none">
+        <Card className="lg:col-span-2 glass border-none min-w-0">
           <CardHeader>
             <CardTitle className="text-lg font-medium">Revenue Growth</CardTitle>
             <CardDescription>Daily automated revenue tracking</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={REVENUE_DATA}>
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0066FF" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#0066FF" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
-                <XAxis dataKey="name" stroke="#525252" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#525252" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#171717', border: 'none', borderRadius: '8px', color: '#fff' }}
-                  itemStyle={{ color: '#0066FF' }}
-                />
-                <Area type="monotone" dataKey="value" stroke="#0066FF" fillOpacity={1} fill="url(#colorValue)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
+          <CardContent className="h-[300px] relative min-w-0">
+            <div className="absolute inset-0 pb-6 pr-6 pl-2 pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={REVENUE_DATA}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0066FF" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#0066FF" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
+                  <XAxis dataKey="name" stroke="#525252" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#525252" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#171717', border: 'none', borderRadius: '8px', color: '#fff' }}
+                    itemStyle={{ color: '#0066FF' }}
+                  />
+                  <Area type="monotone" dataKey="value" stroke="#0066FF" fillOpacity={1} fill="url(#colorValue)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 

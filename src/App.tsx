@@ -103,57 +103,56 @@ function AetherisApp() {
   };
 
   return (
-    <DynamicThemeProvider>
-      <AppShell />
+    <div className="fixed inset-0 overflow-hidden bg-background">
+      <DynamicThemeProvider>
+        <AppShell />
 
-      {/* Architect Chat Slide-out */}
-      <ArchitectChat />
+        {/* Onboarding Dialog */}
+        <OnboardingDialog 
+          completeOnboarding={completeOnboarding}
+          setActiveTab={() => {}}
+        />
 
-      {/* Onboarding Dialog */}
-      <OnboardingDialog 
-        completeOnboarding={completeOnboarding}
-        setActiveTab={() => {}}
-      />
-
-      {/* Branding Confirmation Dialog */}
-      <Dialog open={isBrandingConfirmOpen} onOpenChange={setIsBrandingConfirmOpen}>
-        <DialogContent className="aetheris-card border-none max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Brand Update</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to update your brand's {pendingBrandingUpdate?.type}? This will change the visual identity of your venture.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {pendingBrandingUpdate?.type === 'palette' && (
-              <div className="flex h-12 rounded-lg overflow-hidden border border-accent/10">
-                {pendingBrandingUpdate.value.map((color: string, idx: number) => (
-                  <div key={idx} className="flex-1" style={{ backgroundColor: color }} />
-                ))}
-              </div>
-            )}
-            {pendingBrandingUpdate?.type === 'logo' && (
-              <div className="flex justify-center p-4 bg-secondary/30 rounded-xl">
-                <span className="font-bold text-lg capitalize">{pendingBrandingUpdate.value}</span>
-              </div>
-            )}
-            {pendingBrandingUpdate?.type === 'name' && (
-              <div className="p-4 bg-secondary/30 rounded-xl text-center font-display text-2xl font-bold">
-                {pendingBrandingUpdate.value}
-              </div>
-            )}
-            {pendingBrandingUpdate?.type === 'mission' && (
-              <div className="p-4 bg-secondary/30 rounded-xl text-sm italic">
-                "{pendingBrandingUpdate.value}"
-              </div>
-            )}
-          </div>
-          <div className="flex justify-end gap-3 mt-4">
-            <Button variant="ghost" onClick={() => setIsBrandingConfirmOpen(false)}>Cancel</Button>
-            <Button onClick={handleConfirmBranding} className="electric-glow">Confirm Update</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </DynamicThemeProvider>
+        {/* Branding Confirmation Dialog */}
+        <Dialog open={isBrandingConfirmOpen} onOpenChange={setIsBrandingConfirmOpen}>
+          <DialogContent className="aetheris-card border-none max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirm Brand Update</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to update your brand's {pendingBrandingUpdate?.type}? This will change the visual identity of your venture.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              {pendingBrandingUpdate?.type === 'palette' && (
+                <div className="flex h-12 rounded-lg overflow-hidden border border-accent/10">
+                  {pendingBrandingUpdate.value.map((color: string, idx: number) => (
+                    <div key={idx} className="flex-1" style={{ backgroundColor: color }} />
+                  ))}
+                </div>
+              )}
+              {pendingBrandingUpdate?.type === 'logo' && (
+                <div className="flex justify-center p-4 bg-secondary/30 rounded-xl">
+                  <span className="font-bold text-lg capitalize">{pendingBrandingUpdate.value}</span>
+                </div>
+              )}
+              {pendingBrandingUpdate?.type === 'name' && (
+                <div className="p-4 bg-secondary/30 rounded-xl text-center font-display text-2xl font-bold">
+                  {pendingBrandingUpdate.value}
+                </div>
+              )}
+              {pendingBrandingUpdate?.type === 'mission' && (
+                <div className="p-4 bg-secondary/30 rounded-xl text-sm italic">
+                  "{pendingBrandingUpdate.value}"
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="ghost" onClick={() => setIsBrandingConfirmOpen(false)}>Cancel</Button>
+              <Button onClick={handleConfirmBranding} className="electric-glow">Confirm Update</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </DynamicThemeProvider>
+    </div>
   );
 }

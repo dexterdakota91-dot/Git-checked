@@ -6,11 +6,10 @@ import { useStore } from '../store/useStore';
 
 export function LandingPage({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
   const { projects, selectedProject } = useStore();
-  const hasProjects = projects.length > 0;
 
   return (
-    <div className="h-dvh overflow-y-auto p-6 lg:p-12 bg-background">
-      <div className="max-w-4xl mx-auto space-y-12">
+    <div className="h-full overflow-y-auto p-6 lg:p-12 bg-background scroll-smooth">
+      <div className="max-w-4xl mx-auto space-y-12 pb-20">
         {/* Hero Section */}
         <div className="text-center space-y-6">
           <h1 className="text-4xl md:text-6xl font-display font-bold tracking-tighter">
@@ -21,10 +20,10 @@ export function LandingPage({ setActiveTab }: { setActiveTab: (tab: string) => v
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Your AI-powered command center for brainstorming, architecting, and launching zero-capital businesses.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-            {hasProjects && (
+          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4 min-h-[64px]">
+            {projects && projects.length > 0 && (
               <button className="monolith-btn-elevated group" onClick={() => setActiveTab('dashboard')}>
-                <Play className="mr-2 inline-block" size={18} /> Continue {selectedProject?.branding?.selectedName || selectedProject?.name || 'Venture'}
+                <Play className="mr-2 inline-block" size={18} /> Continue {selectedProject?.branding?.selectedName || selectedProject?.name || projects[0]?.name || 'Venture'}
               </button>
             )}
             <button className="monolith-btn-elevated group bg-secondary/80 text-foreground border border-accent/20 hover:border-primary/50" onClick={() => setActiveTab('idea-lab')}>
