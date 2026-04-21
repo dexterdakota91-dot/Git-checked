@@ -25,8 +25,6 @@ export default function AgentsView({ selectedProject }: AgentsViewProps) {
             key={`${selectedProject.id}-${agent.id}`} 
             agent={agent} 
             projectId={selectedProject.id} 
-            projects={projects} 
-            setProjects={setProjects} 
           />
         )) : (
           <div className="col-span-3 text-center py-20 text-muted-foreground">

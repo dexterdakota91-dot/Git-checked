@@ -18,22 +18,22 @@ export function useFirebaseListeners() {
 
   // Auth Listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setIsAuthReady(true);
+      
       if (user) {
-        try {
-          // Check if user profile exists
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
+        // Fetch user profile in background
+        getDoc(doc(db, 'users', user.uid)).then(userDoc => {
           if (!userDoc.exists()) {
             setShowOnboarding(true);
           } else {
             setUserState(userDoc.data().state || '');
           }
-        } catch (error) {
+        }).catch(error => {
           console.error("Error fetching user profile:", error);
-        }
+        });
       }
-      setIsAuthReady(true);
     });
     return () => unsubscribe();
   }, [setCurrentUser, setIsAuthReady, setShowOnboarding, setUserState]);

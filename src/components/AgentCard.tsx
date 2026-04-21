@@ -15,12 +15,11 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { X } from 'lucide-react';
-import { Agent, Project } from '../types';
+import { Agent } from '../types';
 import { ARCHETYPES } from '../constants/mockData';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useStore } from '../store/useStore';
 
 const getAgentIcon = (archetype?: string) => {
   switch (archetype) {
@@ -51,17 +50,18 @@ const getStatusIndicator = (status: Agent['status']) => {
   }
 };
 
-export function AgentCard({ agent, projectId, projects, setProjects }: { agent: Agent, projectId: string, projects: Project[], setProjects: (p: Project[]) => void, key?: string }) {
+export function AgentCard({ agent, projectId }: { agent: Agent, projectId: string }) {
   const [newName, setNewName] = useState(agent.name);
   const [isSaving, setIsSaving] = useState(false);
   const [userResponse, setUserResponse] = useState('');
+  const { updateAgent } = useStore();
   
   // Extend Agent type in usage if needed, but for now map based on state
   const displayStatus = agent.status as Agent['status'] | 'waiting-for-input';
   
   const handleSaveName = () => {
     setIsSaving(true);
-    updateAgent({ name: newName });
+    updateAgent(projectId, agent.id, { name: newName });
     setTimeout(() => setIsSaving(false), 1000);
   };
 
@@ -69,7 +69,7 @@ export function AgentCard({ agent, projectId, projects, setProjects }: { agent: 
     if (!userResponse.trim()) return;
     
     // Simulate updating the agent back to working after receiving user input
-    updateAgent({ 
+    updateAgent(projectId, agent.id, { 
       status: 'thinking', 
       currentTask: 'Processing user feedback...' 
     });
@@ -77,37 +77,19 @@ export function AgentCard({ agent, projectId, projects, setProjects }: { agent: 
     setUserResponse('');
 
     setTimeout(() => {
-      updateAgent({ 
+      updateAgent(projectId, agent.id, { 
         status: 'working', 
         currentTask: 'Executing on user instructions' 
       });
     }, 2000);
   };
   
-  const updateAgent = async (updates: Partial<Agent>) => {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    const updatedAgents = project.agents.map(a => a.id === agent.id ? { ...a, ...updates } : a);
-    
-    // Optimistic update
-    const updatedProjects = projects.map(p => {
-      if (p.id === projectId) {
-        return {
-          ...p,
-          agents: updatedAgents
-        };
-      }
-      return p;
-    });
-    setProjects(updatedProjects);
+  const handleDebugModeChange = (checked: boolean) => {
+    updateAgent(projectId, agent.id, { debugMode: checked });
+  };
 
-    // Persist to Firestore
-    try {
-      const projectRef = doc(db, 'projects', projectId);
-      await updateDoc(projectRef, { agents: updatedAgents });
-    } catch (error) {
-      console.error("Failed to update agent in Firestore:", error);
-    }
+  const handleArchetypeChange = (id: string, role: string) => {
+    updateAgent(projectId, agent.id, { archetype: id, role });
   };
 
   return (
@@ -208,7 +190,7 @@ export function AgentCard({ agent, projectId, projects, setProjects }: { agent: 
               {ARCHETYPES.map(arch => (
                 <button
                   key={arch.id}
-                  onClick={() => updateAgent({ archetype: arch.id, role: arch.role })}
+                  onClick={() => handleArchetypeChange(arch.id, arch.role)}
                   className={cn(
                     "p-3 rounded-xl border text-left transition-all",
                     agent.archetype === arch.id ? "bg-primary/10 border-primary" : "bg-background/30 border-accent/10 hover:border-primary/50"
@@ -230,7 +212,7 @@ export function AgentCard({ agent, projectId, projects, setProjects }: { agent: 
             </div>
             <Switch 
               checked={agent.debugMode} 
-              onCheckedChange={(checked) => updateAgent({ debugMode: checked })}
+              onCheckedChange={handleDebugModeChange}
             />
           </div>
         </div>

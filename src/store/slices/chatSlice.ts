@@ -28,7 +28,7 @@ export const createChatSlice: StateCreator<AppState, [], [], ChatSlice> = (set, 
   setIsChatOpen: (isOpen) => set({ isChatOpen: isOpen }),
 
   handleSendMessage: async () => {
-    const { chatInput, chatMessages, selectedProject } = get();
+    const { chatInput, chatMessages, selectedProject, activeTab } = get();
     if (!chatInput.trim()) return;
 
     const newMessage = { role: 'user' as const, text: chatInput };
@@ -41,7 +41,8 @@ export const createChatSlice: StateCreator<AppState, [], [], ChatSlice> = (set, 
     try {
       const response = await chatWithArchitect(
         newMessage.text, 
-        [...chatMessages, newMessage]
+        [...chatMessages, newMessage],
+        { activeTab, project: selectedProject }
       );
       
       if (response) {

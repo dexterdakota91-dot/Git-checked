@@ -108,6 +108,15 @@
   to { --angle: 360deg; }
 }
 
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
 .glass {
   background: rgba(28, 28, 28, 0.7);
   backdrop-filter: blur(12px);

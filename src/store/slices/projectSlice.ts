@@ -14,6 +14,7 @@ export interface ProjectSlice {
   deleteProject: (projectId: string) => Promise<void>;
   startProject: (idea: BusinessIdea) => Promise<void>;
   handleUpdateTasks: (projectId: string, updatedTasks: any[]) => Promise<void>;
+  updateAgent: (projectId: string, agentId: string, updates: Partial<any>) => Promise<void>;
   updateVentureBranding: (brandingUpdates: any) => Promise<void>;
 }
 
@@ -24,6 +25,29 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
   })),
   selectedProject: null,
   setSelectedProject: (project) => set({ selectedProject: project }),
+
+  updateAgent: async (projectId: string, agentId: string, updates: Partial<any>) => {
+    const { projects } = get();
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const updatedAgents = project.agents.map(a => a.id === agentId ? { ...a, ...updates } : a);
+    
+    // Optimistic update in store
+    set((state) => ({
+      projects: state.projects.map(p => p.id === projectId ? { ...p, agents: updatedAgents } : p),
+      selectedProject: state.selectedProject?.id === projectId ? { ...state.selectedProject, agents: updatedAgents } : state.selectedProject
+    }));
+
+    // Persist to Firestore
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, { agents: updatedAgents });
+    } catch (error) {
+      console.error("Failed to update agent in Firestore:", error);
+      // Rollback could be implemented here if needed
+    }
+  },
 
   deleteProject: async (projectId: string) => {
     try {

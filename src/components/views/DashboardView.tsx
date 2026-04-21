@@ -27,14 +27,16 @@ import { StatCard } from '../StatCard';
 import { Project } from '../../types';
 import { REVENUE_DATA } from '../../constants/mockData';
 
-interface DashboardViewProps {
-  projects: Project[];
-  selectedProject: Project | null;
-  setActiveTab: (tab: string) => void;
-  setSelectedProject: (project: Project | null) => void;
-}
+import { useStore } from '../../store/useStore';
 
-export default function DashboardView({ projects, selectedProject, setActiveTab, setSelectedProject }: DashboardViewProps) {
+export default function DashboardView({ 
+  setActiveTab 
+}: { setActiveTab: (tab: string) => void }) {
+  const { 
+    projects, 
+    selectedProject, 
+    setSelectedProject 
+  } = useStore();
   return (
     <motion.div
       key="dashboard"
@@ -79,10 +81,10 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
       ) : (
         <>
           {/* High Level Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <StatCard 
               title="Total Revenue" 
-              value={`${projects.reduce((acc, p) => acc + (p.revenue || 0), 0).toLocaleString()}`} 
+              value={`$${projects.reduce((acc, p) => acc + (p.revenue || 0), 0).toLocaleString()}`} 
               trend="+12.5%" 
               icon={<DollarSign className="text-primary" />} 
               withBeam
@@ -105,7 +107,7 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="lg:col-span-2 aetheris-card min-w-0">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Revenue Growth</CardTitle>
+                <CardTitle className="text-lg font-medium font-display tracking-tight">Revenue Growth</CardTitle>
               </CardHeader>
               <CardContent className="h-[200px] relative min-w-0">
                 <div className="absolute inset-0 pb-6 pr-6 pl-2 pt-2">
@@ -119,7 +121,7 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
                     <XAxis dataKey="name" stroke="#525252" fontSize={10} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#525252" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}`} />
+                    <YAxis stroke="#525252" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#171717', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '10px' }}
                       itemStyle={{ color: '#0066FF' }}
@@ -133,12 +135,12 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
 
             <Card className="aetheris-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Recent Events</CardTitle>
+                <CardTitle className="text-lg font-medium font-display tracking-tight">Recent Events</CardTitle>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[200px] pr-4">
                   <div className="space-y-4">
-                    {projects.flatMap(p => p.logs.slice(0, 3).map(l => ({ ...l, projectName: p.name, projectId: p.id }))).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5).map(log => (
+                    {projects.flatMap(p => (p.logs || []).slice(0, 3).map(l => ({ ...l, projectName: p.name, projectId: p.id }))).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5).map(log => (
                       <div key={`${log.projectId}-${log.id}`} className="flex gap-3">
                         <div className={cn(
                           "w-1 h-8 rounded-full",
@@ -160,7 +162,7 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
           {/* Project List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold font-display">Active Ventures</h3>
+              <h3 className="text-xl font-bold font-display tracking-tight">Active Ventures</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {projects.map(p => (
@@ -174,8 +176,8 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
                 >
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="text-lg font-bold group-hover:text-primary transition-colors">{p.name}</h4>
+                      <div className="space-y-1">
+                        <h4 className="text-lg font-bold font-display tracking-tight group-hover:text-primary transition-colors">{p.name}</h4>
                         <p className="text-sm text-muted-foreground line-clamp-1">{p.description}</p>
                       </div>
                       <Badge className={cn(
@@ -186,15 +188,15 @@ export default function DashboardView({ projects, selectedProject, setActiveTab,
                     </div>
                     <div className="flex items-center gap-6">
                       <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Revenue</p>
-                        <p className="text-lg font-bold text-primary">${p.revenue.toLocaleString()}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Revenue</p>
+                        <p className="text-lg font-bold text-primary">${(p.revenue || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Growth</p>
-                        <p className="text-lg font-bold">+{p.growth}%</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Growth</p>
+                        <p className="text-lg font-bold">+{(p.growth || 0)}%</p>
                       </div>
                       <div className="flex -space-x-2 ml-auto">
-                        {p.agents.map(a => (
+                        {(p.agents || []).map(a => (
                           <Avatar key={a.id} className="w-8 h-8 border-2 border-background">
                             <AvatarFallback className="bg-secondary text-[10px]">{a.name[0]}</AvatarFallback>
                           </Avatar>

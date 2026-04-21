@@ -3,6 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { GoogleGenAI } from "@google/genai";
+import { Project } from "../types";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+
 const extractJson = (raw: string) => {
   const cleaned = raw
     .trim()
@@ -23,24 +28,17 @@ const extractJson = (raw: string) => {
 
 const callAi = async (prompt: string, systemInstruction: string, fallbackData: any) => {
   try {
-    const response = await fetch("/api/ai/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, systemInstruction }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`AI request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
-    const text = data.text || "";
-    
-    if (text.includes("Demo Mode:")) {
-      console.log("AI in Demo Mode, using fallback data.");
+    if (!process.env.GEMINI_API_KEY) {
+      console.warn("GEMINI_API_KEY missing, using fallback.");
       return fallbackData;
     }
-    
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [{ role: "user", parts: [{ text: `${systemInstruction}\n\n${prompt}` }] }]
+    });
+
+    const text = response.text || "";
     return text;
   } catch (error) {
     console.error("AI Service Error:", error);
@@ -141,11 +139,36 @@ export const generateRefinedTemplate = async (userRegion?: string) => {
 
 export const chatWithArchitect = async (
   message: string,
-  history: { role: 'user' | 'model', text: string }[]
+  history: { role: 'user' | 'model', text: string }[],
+  context?: { activeTab?: string, project?: Project | null }
 ) => {
-  const prompt = `History: ${JSON.stringify(history)}\nUser: ${message}`;
-  const systemInstruction = "You are the Aetheris Ventures Business Architect, a genius money-making guru. Your goal is to help users brainstorm and refine 0-capital, AI-automated business ideas. Be bold, visionary, and highly practical. Use advanced prompt engineering concepts in your suggestions.";
-  const fallback = "I'm currently in Demo Mode. I can still help you brainstorm, but my responses might be a bit more limited. What's on your mind?";
+  const contextStr = context ? `
+    Current Location: ${context.activeTab}
+    Active Venture: ${context.project ? `
+      Name: ${context.project.name}
+      Status: ${context.project.status}
+      Mission: ${context.project.branding?.missionStatement || 'Not set'}
+      Progress: ${context.project.tasks.filter(t => t.status === 'completed').length}/${context.project.tasks.length} tasks done
+    ` : 'None selected'}
+  ` : '';
+
+  const prompt = `Context: ${contextStr}\nHistory: ${JSON.stringify(history)}\nUser: ${message}`;
+  const systemInstruction = `You are the Aetheris Ventures Business Architect, the user's elite guide and executive partner. 
+  Your goal is to walk the user through every step of building their venture, from initial idea to scaling.
+  
+  CORE MISSION:
+  1. GUIDANCE: Be proactive. If the user doesn't know what to do, suggest the next logical step based on their Current Location and Venture Status.
+  2. EXECUTION: You don't just talk; you DO. If the user likes an idea, offer to perform the action for them.
+  3. INTERFACE INTEGRATION: If you suggest a specific change (like updating a mission, generating tasks, or changing branding), include a special "ACTION" block at the end of your response in the format:
+     [ACTION:TYPE:DATA]
+     Types:
+     - UPDATE_MISSION: "New mission statement"
+     - GENERATE_ROADMAP: true
+     - REFRESH_BRANDING: true
+  
+  Tone: Elite, visionary, supportive, and extremely practical. Use advanced business terminology but stay accessible.`;
+  
+  const fallback = "I'm currently recalibrating my neural links. I can still guide you, but my execution capabilities may be limited. How can I help you progress your venture today?";
   
   return await callAi(prompt, systemInstruction, fallback);
 };

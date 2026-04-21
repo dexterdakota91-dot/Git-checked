@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { Agent } from '../../types';
 
-export function OrbitLogo({ size = 40, primary = '#0066FF', secondary = '#D4AF37' }: { size?: number, primary?: string, secondary?: string }) {
+export const OrbitLogo = React.memo(({ size = 40, primary = '#0066FF', secondary = '#D4AF37' }: { size?: number, primary?: string, secondary?: string }) => {
   return (
     <div style={{ width: size, height: size }} className="relative flex items-center justify-center">
       {/* Central Core */}
@@ -49,9 +49,9 @@ export function OrbitLogo({ size = 40, primary = '#0066FF', secondary = '#D4AF37
       </motion.div>
     </div>
   );
-}
+});
 
-export function PrismLogo({ size = 40, primary = '#0066FF', secondary = '#D4AF37' }: { size?: number, primary?: string, secondary?: string }) {
+export const PrismLogo = React.memo(({ size = 40, primary = '#0066FF', secondary = '#D4AF37' }: { size?: number, primary?: string, secondary?: string }) => {
   const gradId = React.useId();
   return (
     <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden">
@@ -81,9 +81,9 @@ export function PrismLogo({ size = 40, primary = '#0066FF', secondary = '#D4AF37
       </svg>
     </div>
   );
-}
+});
 
-export function AetherisLogo({ size = 40, primary = '#0066FF', secondary = '#D4AF37' }: { size?: number, primary?: string, secondary?: string }) {
+export const AetherisLogo = React.memo(({ size = 40, primary = '#0066FF', secondary = '#D4AF37' }: { size?: number, primary?: string, secondary?: string }) => {
   return (
     <div className="flex items-center gap-2">
       <MonolithLogo size={size} primary={primary} secondary={secondary} />
@@ -92,17 +92,17 @@ export function AetherisLogo({ size = 40, primary = '#0066FF', secondary = '#D4A
       </span>
     </div>
   );
-}
+});
 
-export function AetherisTextLogo({ size = 40 }: { size?: number }) {
+export const AetherisTextLogo = React.memo(({ size = 40 }: { size?: number }) => {
   return (
     <span className="font-display font-bold tracking-tighter text-white animate-pulse-glow cursor-pointer" style={{ fontSize: size * 0.6 }}>
       AETHERIS
     </span>
   );
-}
+});
 
-export function MonolithLogo({ 
+export const MonolithLogo = React.memo(({ 
   size = 40, 
   agents = [], 
   logoType = 'monolith',
@@ -116,7 +116,7 @@ export function MonolithLogo({
   primary?: string,
   secondary?: string,
   accent?: string
-}) {
+}) => {
   if (logoType === 'orbit') return <OrbitLogo size={size} primary={primary} secondary={secondary} />;
   if (logoType === 'prism') return <PrismLogo size={size} primary={primary} secondary={secondary} />;
 
@@ -167,4 +167,4 @@ export function MonolithLogo({
       />
     </div>
   );
-}
+});

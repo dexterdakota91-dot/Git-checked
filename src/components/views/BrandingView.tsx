@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { 
-  Palette, Tag, Globe, Zap, CheckCircle2, ArrowUpRight, Search, ChevronRight, Settings2, Plus
+  Palette, Tag, Globe, Zap, CheckCircle2, ArrowUpRight, Search, ChevronRight, Settings2, Plus, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -16,7 +16,7 @@ import { generateBranding, generateMissionStatements, generatePalettes, generate
 import { db } from '../../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
-export default function BrandingView() {
+export default function BrandingView({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const { 
     selectedProject, 
     onboardingStep,
@@ -59,7 +59,10 @@ export default function BrandingView() {
         {onboardingStep === 2 && <MissionCard onComplete={() => setOnboardingStep(3)} />}
         {onboardingStep === 3 && <LogoCard onComplete={() => setOnboardingStep(4)} />}
         {onboardingStep === 4 && <VoiceToneCard onComplete={() => setOnboardingStep(5)} />}
-        {onboardingStep === 5 && <SummaryCard onComplete={() => {}} />}
+        {onboardingStep === 5 && <SummaryCard 
+          onComplete={() => setOnboardingStep(0)} 
+          setActiveTab={setActiveTab}
+        />}
       </div>
     </motion.div>
   );
@@ -94,6 +97,19 @@ function NamingCard({ onComplete }: { onComplete: () => void }) {
     onComplete();
   };
 
+  const handleArchitectChoice = async () => {
+    setLoading(true);
+    try {
+      const suggestedNames = await generateNames(selectedProject.name, selectedProject.description);
+      if (suggestedNames && suggestedNames.length > 0) {
+        setOptions(suggestedNames);
+        await handleVerify(suggestedNames[0]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generate = async () => {
     if (!selectedProject) return;
     setLoading(true);
@@ -111,15 +127,19 @@ function NamingCard({ onComplete }: { onComplete: () => void }) {
       <CardContent className="space-y-4">
         <div className="flex gap-2">
             <input 
-              className="flex-grow p-2 rounded-lg bg-background/50 border border-accent/20 text-foreground" 
+              className="flex-grow p-2 rounded-lg bg-background/50 border border-accent/10 text-foreground text-sm focus:border-primary/50 outline-none transition-all" 
               placeholder="e.g. ApexLabs" 
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={verifying}
             />
-            <Button onClick={() => handleVerify(name)} disabled={!name || verifying}>
-              {verifying ? <LoadingIndicator icon={Search} size={14} className="mr-2" /> : null}
-              {verifying ? 'Checking...' : 'Verify Name'}
+            <Button 
+              onClick={() => name ? handleVerify(name) : handleArchitectChoice()} 
+              disabled={verifying || loading}
+              className={cn(!name && "bg-secondary text-secondary-foreground hover:bg-secondary/80")}
+            >
+              {verifying || loading ? <LoadingIndicator icon={Search} size={14} className="mr-2" /> : null}
+              {verifying ? 'Verifying...' : loading ? 'Neural Choice...' : name ? 'Verify Name' : 'Architect Choice'}
             </Button>
         </div>
         {verifyMsg && (
@@ -159,6 +179,18 @@ function ColorCard({ onComplete }: { onComplete: () => void }) {
       onComplete();
   };
 
+  const handleArchitectChoice = async () => {
+    setLoading(true);
+    try {
+      const generated = await generatePalettes(selectedProject.name, selectedProject.description);
+      if (generated && generated.length > 0) {
+        await handleSelect(generated[0].colors);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generate = async () => {
     if (!selectedProject) return;
     setLoading(true);
@@ -174,10 +206,16 @@ function ColorCard({ onComplete }: { onComplete: () => void }) {
         <CardDescription>Pick a palette for your venture.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-          <Button variant="outline" className="w-full" onClick={generate} disabled={loading}>
-            {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
-            Generate Palettes
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={generate} disabled={loading}>
+              {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+              Generate Palettes
+            </Button>
+            <Button className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/80" onClick={handleArchitectChoice} disabled={loading}>
+              {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              Architect's Pick
+            </Button>
+          </div>
 
           {palettes.length > 0 && (
              <div className="grid grid-cols-2 gap-4 mt-4">
@@ -211,6 +249,18 @@ function MissionCard({ onComplete }: { onComplete: () => void }) {
         onComplete();
     };
 
+    const handleArchitectChoice = async () => {
+        setLoading(true);
+        try {
+            const missions = await generateMissionStatements(selectedProject.name, selectedProject.description);
+            if (missions && missions.length > 0) {
+                await handleSave(missions[0]);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const generate = async () => {
       if (!selectedProject) return;
       setLoading(true);
@@ -223,14 +273,21 @@ function MissionCard({ onComplete }: { onComplete: () => void }) {
         <Card className="aetheris-card p-8 bg-background border-accent/20">
             <CardHeader><CardTitle>Mission Statement</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <input className="w-full p-2 rounded-lg bg-background/50 border border-accent/20 text-foreground" value={mission} onChange={(e) => setMission(e.target.value)} placeholder="Type a manual mission statement..." />
+                <input className="w-full p-2 h-12 rounded-lg bg-background/50 border border-accent/10 text-foreground outline-none focus:border-primary/50 transition-all" value={mission} onChange={(e) => setMission(e.target.value)} placeholder="Type a manual mission statement..." />
                 
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={generate} disabled={loading}>
                     {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
-                    Generate Options
+                    Explore Options
                   </Button>
-                  <Button onClick={() => handleSave(mission)} disabled={!mission}>Use Manual Input & Continue</Button>
+                  <Button 
+                    onClick={() => mission ? handleSave(mission) : handleArchitectChoice()} 
+                    disabled={loading}
+                    className={cn("flex-1", !mission && "bg-secondary text-secondary-foreground hover:bg-secondary/80")}
+                  >
+                    {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : null}
+                    {loading ? 'Consulting...' : mission ? 'Save & Continue' : 'Architect Choice'}
+                  </Button>
                 </div>
 
                 {options.length > 0 && (
@@ -257,6 +314,18 @@ function LogoCard({ onComplete }: { onComplete: () => void }) {
         onComplete();
     };
 
+    const handleArchitectChoice = async () => {
+        setLoading(true);
+        try {
+            const options = await generateLogoConcepts(selectedProject.name, selectedProject.description);
+            if (options && options.length > 0) {
+                await handleSave(options[0]);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const generate = async () => {
       if (!selectedProject) return;
       setLoading(true);
@@ -269,10 +338,16 @@ function LogoCard({ onComplete }: { onComplete: () => void }) {
         <Card className="aetheris-card p-8 bg-background border-accent/20">
             <CardHeader><CardTitle>Logo Design Concepts</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full" onClick={generate} disabled={loading}>
-                  {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
-                  Generate Logo Concepts
-                </Button>
+                <div className="flex gap-3">
+                    <Button variant="outline" className="flex-1" onClick={generate} disabled={loading}>
+                    {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+                    Generate Logo Concepts
+                    </Button>
+                    <Button className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/80" onClick={handleArchitectChoice} disabled={loading}>
+                        {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                        Architect's Brand
+                    </Button>
+                </div>
 
                 {concepts.length > 0 && (
                   <div className="grid grid-cols-1 gap-4 mt-4">
@@ -301,6 +376,22 @@ function VoiceToneCard({ onComplete }: { onComplete: () => void }) {
         onComplete();
     };
 
+    const handleArchitectChoice = async () => {
+        setLoading(true);
+        try {
+            const res = await generateVoiceAndTone(selectedProject.name, selectedProject.description);
+            if (res) {
+                await updateVentureBranding({ 
+                    tone: res.tone || 'Professional', 
+                    targetAudience: res.targetAudience || 'General' 
+                });
+                onComplete();
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const generate = async () => {
       if (!selectedProject) return;
       setLoading(true);
@@ -316,22 +407,34 @@ function VoiceToneCard({ onComplete }: { onComplete: () => void }) {
         <Card className="aetheris-card p-8 bg-background border-accent/20">
             <CardHeader><CardTitle>Voice & Tone</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full mb-4" onClick={generate} disabled={loading}>
-                  {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
-                  Auto-fill with AI
-                </Button>
+                <div className="flex gap-3 mb-4">
+                    <Button variant="outline" className="flex-1" onClick={generate} disabled={loading}>
+                    {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+                    Auto-fill with AI
+                    </Button>
+                    <Button className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/80" onClick={handleArchitectChoice} disabled={loading}>
+                        {loading ? <LoadingIndicator icon={Zap} size={14} className="mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                        Architect's Choice
+                    </Button>
+                </div>
 
-                <input className="w-full p-2 rounded-lg bg-background/50 border border-accent/20 text-foreground" value={tone} onChange={(e) => setTone(e.target.value)} placeholder="Tone (e.g. Professional)" />
-                <input className="w-full p-2 rounded-lg bg-background/50 border border-accent/20 text-foreground" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="Target Audience" />
+                <input className="w-full p-2 rounded-lg bg-background/50 border border-accent/10 text-foreground outline-none focus:border-primary/50 transition-all" value={tone} onChange={(e) => setTone(e.target.value)} placeholder="Tone (e.g. Professional)" />
+                <input className="w-full p-2 rounded-lg bg-background/50 border border-accent/10 text-foreground outline-none focus:border-primary/50 transition-all" value={audience} onChange={(e) => setAudience(e.target.value)} placeholder="Target Audience" />
                 
-                <Button onClick={handleSave} disabled={!tone || !audience} className="w-full mt-2">Save & Continue</Button>
+                <Button 
+                    onClick={handleSave} 
+                    disabled={(!tone || !audience) || loading} 
+                    className="w-full mt-2"
+                >
+                    Save & Continue
+                </Button>
             </CardContent>
         </Card>
     );
 }
 
-function SummaryCard({ onComplete }: { onComplete: () => void }) {
-    const { selectedProject, setActiveTab } = useStore();
+function SummaryCard({ onComplete, setActiveTab }: { onComplete: () => void, setActiveTab?: (tab: string) => void }) {
+    const { selectedProject } = useStore();
     
     // Fallbacks just in case
     const b = selectedProject?.branding || {};
@@ -343,9 +446,10 @@ function SummaryCard({ onComplete }: { onComplete: () => void }) {
     const logoConcept = b.logoDescription || 'A clean, modern logo design.';
 
     const handleConfirm = () => {
-      // In a real app, apply global theme here
-      setActiveTab('dashboard');
-      onComplete(); // might clear wizard setup
+      if (setActiveTab) {
+        setActiveTab('dashboard');
+      }
+      onComplete(); // resets wizard for next time
     };
 
     return (

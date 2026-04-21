@@ -21,29 +21,19 @@ import { TaskManagement } from '../TaskManagement';
 import { ElectricityTracer } from '../ElectricityTracer';
 import { DeleteVentureButton } from '../DeleteVentureButton';
 
-interface ProjectDetailViewProps {
-  selectedProject: Project;
-  setActiveTab: (tab: string) => void;
-  projects: Project[];
-  setProjects: (projects: Project[]) => void;
-  deleteProject: (id: string) => void;
-  addStripeIntegration: (id: string) => void;
-  handleUpdateTasks: (projectId: string, updatedTasks: any[]) => void;
-}
-
 export default function ProjectDetailView({ 
   selectedProject, 
-  setActiveTab, 
-  projects, 
-  setProjects, 
-  deleteProject,
-  addStripeIntegration,
-  handleUpdateTasks
-}: ProjectDetailViewProps) {
+  setActiveTab
+}: { selectedProject: Project, setActiveTab: (tab: string) => void }) {
   const { 
     isVentureSettingsOpen, 
     setIsVentureSettingsOpen,
-    setActiveLabTab
+    setActiveLabTab,
+    projects,
+    setProjects,
+    deleteProject,
+    handleUpdateTasks,
+    addStripeIntegration
   } = useStore();
 
   const handleStripeCheckout = async (amount: number, projectName: string) => {
@@ -254,8 +244,6 @@ export default function ProjectDetailView({
                 key={agent.id} 
                 agent={agent} 
                 projectId={selectedProject.id} 
-                projects={projects} 
-                setProjects={setProjects} 
               />
             ))}
           </div>

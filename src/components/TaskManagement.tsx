@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { 
   CheckCircle2, 
   Circle, 
@@ -64,6 +65,7 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
     progress: 0,
     status: 'pending'
   });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const tasks = project.tasks || [];
 
@@ -118,7 +120,8 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
   const updateTaskStatus = (taskId: string, status: Task['status']) => {
     const task = tasks.find(t => t.id === taskId);
     if (status === 'completed' && task && !canCompleteTask(task)) {
-      alert("Please complete all prerequisites before marking this task as done.");
+      setErrorMessage("Please complete all prerequisites before marking this task as done.");
+      setTimeout(() => setErrorMessage(null), 4000);
       return;
     }
     const updatedTasks = tasks.map(t => 
@@ -161,6 +164,15 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
 
   return (
     <div className="space-y-6">
+      {errorMessage && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          <AlertTriangle size={14} /> {errorMessage}
+        </motion.div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold font-display text-foreground">Operational Roadmap</h2>
