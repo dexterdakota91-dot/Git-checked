@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   CheckCircle2, 
   Circle, 
@@ -68,6 +68,21 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const tasks = project.tasks || [];
+  const resetPerformed = React.useRef<string | null>(null);
+
+  // Reset logic: One-time cleanup for manually skipped tasks per project
+  React.useEffect(() => {
+    if (resetPerformed.current === project.id) return;
+    
+    const hasCompleted = tasks.some(t => t.status === 'completed');
+    if (hasCompleted) {
+      const resetTasks = tasks.map(t => 
+        t.status === 'completed' ? { ...t, status: 'in-progress' as const, progress: 0 } : t
+      );
+      onUpdateTasks(resetTasks);
+    }
+    resetPerformed.current = project.id;
+  }, [project.id]);
 
   const handleAddTask = () => {
     const task: Task = {
@@ -120,7 +135,7 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
   const updateTaskStatus = (taskId: string, status: Task['status']) => {
     const task = tasks.find(t => t.id === taskId);
     if (status === 'completed' && task && !canCompleteTask(task)) {
-      setErrorMessage("Please complete all prerequisites before marking this task as done.");
+      setErrorMessage("Please complete all prerequisites before this task can be finalized.");
       setTimeout(() => setErrorMessage(null), 4000);
       return;
     }
@@ -160,7 +175,12 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
     }
   };
 
-  const filteredTasks = filter === 'all' ? tasks : tasks.filter(t => t.category === filter);
+  const filteredTasks = tasks.filter(t => {
+    const categoryMatch = filter === 'all' || t.category === filter;
+    // Strict adherence: cards go away when finished (progress 100)
+    // No "Show Finished" toggle as per "Take away the user's ability to show finished"
+    return categoryMatch && t.status !== 'completed' && t.progress < 100;
+  });
 
   return (
     <div className="space-y-6">
@@ -285,21 +305,23 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-        {['all', 'legal', 'technical', 'marketing', 'financial', 'operations'].map((cat) => (
-          <Button
-            key={cat}
-            variant={filter === cat ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setFilter(cat as any)}
-            className={cn(
-              "capitalize",
-              filter === cat ? "electric-glow" : "text-muted-foreground"
-            )}
-          >
-            {cat}
-          </Button>
-        ))}
+      <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 no-scrollbar">
+        <div className="flex gap-2">
+          {['all', 'legal', 'technical', 'marketing', 'financial', 'operations'].map((cat) => (
+            <Button
+              key={cat}
+              variant={filter === cat ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setFilter(cat as any)}
+              className={cn(
+                "capitalize",
+                filter === cat ? "electric-glow" : "text-muted-foreground"
+              )}
+            >
+              {cat}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -316,141 +338,153 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
             </CardContent>
           </Card>
         ) : (
-          filteredTasks.map((task) => (
-            <Card key={task.id} className="aetheris-card group hover:bg-accent/5 transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  <button 
-                    onClick={() => updateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
-                    className="mt-1 hover:scale-110 transition-transform"
-                  >
-                    {getStatusIcon(task.status)}
-                  </button>
-                  
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <Dialog>
-                            <DialogTrigger nativeButton={false} render={
-                              <h4 className={cn(
-                                "font-bold text-foreground truncate cursor-pointer hover:text-primary transition-colors",
-                                task.status === 'completed' && "line-through text-muted-foreground"
-                              )}>
-                                {task.title}
-                              </h4>
-                            } />
-                            <DialogContent className="aetheris-card border-none max-w-2xl">
-                              <DialogHeader>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Badge variant="outline" className={cn("text-[10px] uppercase tracking-tighter px-1.5 py-0", getPriorityColor(task.priority))}>
-                                    {task.priority} Priority
-                                  </Badge>
-                                  <Badge variant="secondary" className="text-[10px] uppercase tracking-tighter px-1.5 py-0">
-                                    {task.category}
-                                  </Badge>
-                                </div>
-                                <DialogTitle className="text-2xl font-bold font-display">{task.title}</DialogTitle>
-                                <DialogDescription className="text-muted-foreground pt-2">
-                                  {task.description}
-                                </DialogDescription>
-                              </DialogHeader>
-
-                              <div className="grid grid-cols-2 gap-6 py-6 border-y border-accent/10">
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Status</p>
-                                  <div className="flex items-center gap-2">
-                                    {getStatusIcon(task.status)}
-                                    <span className="capitalize text-sm font-medium">{task.status?.replace('-', ' ') || 'Unknown'}</span>
-                                  </div>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Estimated Effort</p>
-                                  <div className="flex items-center gap-2 text-sm font-medium">
-                                    <Clock size={14} className="text-primary" />
-                                    <span>{task.estimatedHours || 0} Hours</span>
-                                  </div>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Current Progress</p>
-                                  <div className="flex items-center gap-3">
-                                    <Progress value={task.progress} className="h-2 flex-1" />
-                                    <span className="text-sm font-mono">{task.progress}%</span>
-                                  </div>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Due Date</p>
-                                  <div className="flex items-center gap-2 text-sm font-medium">
-                                    <Calendar size={14} className="text-primary" />
-                                    <span>{task.dueDate || 'No date set'}</span>
-                                  </div>
-                                </div>
-                                {task.prerequisites && task.prerequisites.length > 0 && (
-                                  <div className="col-span-2 space-y-1">
-                                    <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Prerequisites</p>
-                                    <ul className="list-disc list-inside text-sm text-muted-foreground">
-                                      {task.prerequisites.map((p, i) => <li key={i}>{p}</li>)}
-                                    </ul>
-                                  </div>
-                                )}
-                              </div>
-
-                              <DialogFooter className="pt-4 flex items-center justify-end gap-2">
-                                <DialogClose className={buttonVariants({ variant: 'outline' })}>
-                                  Cancel
-                                </DialogClose>
-                                <DialogClose className={buttonVariants({ variant: 'outline' })} onClick={() => updateTaskStatus(task.id, 'blocked')}>
-                                  Mark Blocked
-                                </DialogClose>
-                                <DialogClose 
-                                  className={cn(buttonVariants({ variant: 'default' }), "electric-glow")}
-                                  onClick={() => updateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
-                                >
-                                  {task.status === 'completed' ? 'Mark as Incomplete' : 'Mark Task as Done'}
-                                </DialogClose>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
-                          <Badge variant="outline" className={cn("text-[10px] uppercase tracking-tighter px-1.5 py-0", getPriorityColor(task.priority))}>
-                            {task.priority}
-                          </Badge>
-                        </div>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical size={14} />
-                        </Button>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {filteredTasks.map((task, idx) => (
+              <motion.div
+                key={task.id || `task-${idx}`}
+                layout
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+              >
+                <Card className="aetheris-card group hover:bg-accent/5 transition-all duration-300">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="mt-1">
+                        {getStatusIcon(task.status)}
                       </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground line-clamp-1 mb-3">
-                      {task.description}
-                    </p>
+                      
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <Dialog>
+                                <DialogTrigger nativeButton={false} render={
+                                  <h4 className={cn(
+                                    "font-bold text-foreground truncate cursor-pointer hover:text-primary transition-colors",
+                                    task.status === 'completed' && "line-through text-muted-foreground"
+                                  )}>
+                                    {task.title}
+                                  </h4>
+                                } />
+                                <DialogContent className="aetheris-card border-none max-w-2xl">
+                                  <DialogHeader>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Badge variant="outline" className={cn("text-[10px] uppercase tracking-tighter px-1.5 py-0", getPriorityColor(task.priority))}>
+                                        {task.priority} Priority
+                                      </Badge>
+                                      <Badge variant="secondary" className="text-[10px] uppercase tracking-tighter px-1.5 py-0">
+                                        {task.category}
+                                      </Badge>
+                                    </div>
+                                    <DialogTitle className="text-2xl font-bold font-display">{task.title}</DialogTitle>
+                                    <DialogDescription className="text-muted-foreground pt-2">
+                                      {task.description}
+                                    </DialogDescription>
+                                  </DialogHeader>
 
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                          <span>Progress</span>
-                          <span>{task.progress}%</span>
-                        </div>
-                        <Progress value={task.progress} className="h-1.5" />
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-                        <div className="flex items-center gap-1">
-                          <Tag className="w-3 h-3" />
-                          <span className="capitalize">{task.category}</span>
-                        </div>
-                        {task.estimatedHours && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{task.estimatedHours}h</span>
+                                  <div className="grid grid-cols-2 gap-6 py-6 border-y border-accent/10">
+                                    <div className="space-y-1">
+                                      <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Status</p>
+                                      <div className="flex items-center gap-2">
+                                        {getStatusIcon(task.status)}
+                                        <span className="capitalize text-sm font-medium">{task.status?.replace('-', ' ') || 'Unknown'}</span>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Estimated Effort</p>
+                                      <div className="flex items-center gap-2 text-sm font-medium">
+                                        <Clock size={14} className="text-primary" />
+                                        <span>{task.estimatedHours || 0} Hours</span>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Adjust Progress</p>
+                                      <div className="flex items-center gap-3">
+                                        <input 
+                                          type="range" 
+                                          min="0" 
+                                          max="100" 
+                                          value={task.progress} 
+                                          onChange={(e) => updateTaskProgress(task.id, parseInt(e.target.value))}
+                                          className="flex-1 h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                                        />
+                                        <span className="text-sm font-mono w-10 text-right">{task.progress}%</span>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Due Date</p>
+                                      <div className="flex items-center gap-2 text-sm font-medium">
+                                        <Calendar size={14} className="text-primary" />
+                                        <span>{task.dueDate || 'No date set'}</span>
+                                      </div>
+                                    </div>
+                                    {task.prerequisites && task.prerequisites.length > 0 && (
+                                      <div className="col-span-2 space-y-1">
+                                        <p className="text-[10px] uppercase text-muted-foreground tracking-widest">Prerequisites</p>
+                                        <ul className="list-disc list-inside text-sm text-muted-foreground">
+                                          {task.prerequisites.map((p, i) => <li key={`prereq-${i}`}>{p}</li>)}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <DialogFooter className="pt-4 flex items-center justify-end gap-2">
+                                    <DialogClose className={buttonVariants({ variant: 'outline' })}>
+                                      Close Details
+                                    </DialogClose>
+                                    <Button 
+                                      variant="outline" 
+                                      className={cn(task.status === 'blocked' ? "bg-red-500/10 text-red-500" : "text-muted-foreground")}
+                                      onClick={() => updateTaskStatus(task.id, task.status === 'blocked' ? 'pending' : 'blocked')}
+                                    >
+                                      {task.status === 'blocked' ? 'Unblock Task' : 'Flag as Blocked'}
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                              <Badge variant="outline" className={cn("text-[10px] uppercase tracking-tighter px-1.5 py-0", getPriorityColor(task.priority))}>
+                                {task.priority}
+                              </Badge>
+                            </div>
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical size={14} />
+                            </Button>
                           </div>
-                        )}
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground line-clamp-1 mb-3">
+                          {task.description}
+                        </p>
+
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1">
+                            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                              <span>Progress</span>
+                              <span>{task.progress}%</span>
+                            </div>
+                            <Progress value={task.progress} className="h-1.5" />
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                            <div className="flex items-center gap-1">
+                              <Tag className="w-3 h-3" />
+                              <span className="capitalize">{task.category}</span>
+                            </div>
+                            {task.estimatedHours && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{task.estimatedHours}h</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </div>

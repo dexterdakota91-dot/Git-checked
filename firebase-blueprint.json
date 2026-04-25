@@ -29,6 +29,7 @@
         "prompt": { "type": "string" },
         "recommendedModel": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
+        "isAutonomous": { "type": "boolean", "description": "Whether the AI Architect should run persistently in the background." },
         "tasks": {
           "type": "array",
           "items": { "$ref": "Task" }

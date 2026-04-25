@@ -16,6 +16,10 @@ export interface ProjectSlice {
   handleUpdateTasks: (projectId: string, updatedTasks: any[]) => Promise<void>;
   updateAgent: (projectId: string, agentId: string, updates: Partial<any>) => Promise<void>;
   updateVentureBranding: (brandingUpdates: any) => Promise<void>;
+  toggleAutonomy: (projectId: string) => Promise<void>;
+  addProjectLog: (projectId: string, type: 'info' | 'success' | 'thought' | 'decision' | 'error', message: string, details?: string) => Promise<void>;
+  createAgent: (projectId: string, agent: { name: string, role: string, specialty: string, capabilities: string[] }) => Promise<void>;
+  completeTask: (projectId: string, taskId: string, logMessage?: string) => Promise<void>;
 }
 
 export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = (set, get) => ({
@@ -25,6 +29,72 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
   })),
   selectedProject: null,
   setSelectedProject: (project) => set({ selectedProject: project }),
+
+  addProjectLog: async (projectId: string, type, message, details) => {
+    const { projects } = get();
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const newLog = {
+      id: Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      type,
+      message,
+      details
+    };
+
+    const updatedLogs = [...(project.logs || []), newLog];
+
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, { logs: updatedLogs });
+    } catch (error) {
+      console.error("Failed to add log:", error);
+    }
+  },
+
+  createAgent: async (projectId: string, agentData) => {
+    const { projects } = get();
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const newAgent = {
+      ...agentData,
+      id: `agent-${Math.random().toString(36).substr(2, 5)}`,
+      status: 'idle',
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${agentData.name}&backgroundColor=transparent`,
+    };
+
+    const updatedAgents = [...(project.agents || []), newAgent];
+
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, { agents: updatedAgents });
+      get().addProjectLog(projectId, 'success', `New Agent Spawned: ${agentData.name}`, `Role: ${agentData.role} | Specialty: ${agentData.specialty}`);
+    } catch (error) {
+      console.error("Failed to create agent:", error);
+    }
+  },
+
+  completeTask: async (projectId: string, taskId: string, logMessage) => {
+    const { projects } = get();
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const updatedTasks = (project.tasks || []).map(t => 
+      t.id === taskId ? { ...t, status: 'completed', progress: 100 } : t
+    );
+
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, { tasks: updatedTasks });
+      if (logMessage) {
+        get().addProjectLog(projectId, 'success', logMessage);
+      }
+    } catch (error) {
+      console.error("Failed to complete task:", error);
+    }
+  },
 
   updateAgent: async (projectId: string, agentId: string, updates: Partial<any>) => {
     const { projects } = get();
@@ -105,10 +175,16 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
       }
 
       // Generate Tasks via Gemini
-      suggestTasks(idea.title, idea.description, 'ideation').then(async (tasks) => {
-        if (tasks && tasks.length > 0) {
+      suggestTasks(idea.title, idea.description, 'ideation').then(async (suggestedTasks) => {
+        if (suggestedTasks && suggestedTasks.length > 0) {
+          const tasksWithIds = suggestedTasks.map(t => ({
+            ...t,
+            id: Math.random().toString(36).substr(2, 9),
+            status: 'pending',
+            progress: 0
+          }));
           const projectRef = doc(db, 'projects', projectId);
-          await updateDoc(projectRef, { tasks });
+          await updateDoc(projectRef, { tasks: tasksWithIds });
         }
       });
 
@@ -182,6 +258,27 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
       set({ selectedProject: { ...selectedProject, branding: updatedBranding } });
     } catch (error) {
       console.error("Failed to persist branding", error);
+    }
+  },
+
+  toggleAutonomy: async (projectId: string) => {
+    const { projects } = get();
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    const newValue = !project.isAutonomous;
+
+    // Optimistic update
+    set((state) => ({
+      projects: state.projects.map(p => p.id === projectId ? { ...p, isAutonomous: newValue } : p),
+      selectedProject: state.selectedProject?.id === projectId ? { ...state.selectedProject, isAutonomous: newValue } : state.selectedProject
+    }));
+
+    try {
+      const projectRef = doc(db, 'projects', projectId);
+      await updateDoc(projectRef, { isAutonomous: newValue });
+    } catch (error) {
+      console.error("Failed to toggle autonomy:", error);
     }
   }
 });

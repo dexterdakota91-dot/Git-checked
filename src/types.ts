@@ -51,6 +51,7 @@ export interface Project {
   tasks: Task[];
   logs: LogEntry[];
   createdAt: string;
+  isAutonomous?: boolean;
   outlook?: string;
   revenueStrategy?: string;
   projections?: {

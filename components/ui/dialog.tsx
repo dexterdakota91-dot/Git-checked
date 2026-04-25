@@ -44,9 +44,7 @@ function DialogContent({
 }: DialogPrimitive.Popup.Props) {
   return (
     <DialogPortal>
-      <DialogPrimitive.Close data-slot="dialog-close" type="button" className="fixed inset-0 cursor-default">
-        <DialogOverlay />
-      </DialogPrimitive.Close>
+      <DialogOverlay />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
@@ -55,7 +53,11 @@ function DialogContent({
         )}
         {...props}
       >
-        <div className="flex-1 overflow-y-auto p-6 no-scrollbar max-h-[85vh]">
+        <div className="flex-1 overflow-y-auto p-6 no-scrollbar max-h-[85vh] relative">
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground cursor-pointer z-[102] hover:bg-white/10">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
           {children}
         </div>
       </DialogPrimitive.Popup>

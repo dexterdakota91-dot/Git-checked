@@ -18,9 +18,14 @@ export function ArchitectChat() {
     selectedProject,
     activeTab,
     setProjects,
-    projects
+    projects,
+    addProjectLog,
+    createAgent,
+    completeTask,
+    toggleAutonomy
   } = useStore();
 
+  const isAutonomous = selectedProject?.isAutonomous || false;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,13 +38,32 @@ export function ArchitectChat() {
     }
   }, [chatMessages, isChatLoading, isChatOpen]);
 
+  // Autonomous Execution Trigger
+  useEffect(() => {
+    if (isAutonomous && chatMessages.length > 0 && !isChatLoading) {
+      const lastMessage = chatMessages[chatMessages.length - 1];
+      if (lastMessage.role === 'model') {
+        const action = parseAction(lastMessage.text);
+        if (action) {
+          executeAction(action);
+        }
+      }
+    }
+  }, [chatMessages, isAutonomous, isChatLoading]);
+
   const parseAction = (text: string) => {
     const match = text.match(/\[ACTION:(.*?):(.*?)\]/);
     if (match) {
-      return {
-        type: match[1],
-        data: match[2].startsWith('"') ? JSON.parse(match[2]) : match[2]
-      };
+      try {
+        const dataStr = match[2].trim();
+        return {
+          type: match[1],
+          data: (dataStr.startsWith('{') || dataStr.startsWith('[')) ? JSON.parse(dataStr) : dataStr.replace(/^"(.*)"$/, '$1')
+        };
+      } catch (e) {
+        console.error("Action parse error:", e);
+        return null;
+      }
     }
     return null;
   };
@@ -74,6 +98,12 @@ export function ArchitectChat() {
         );
         setProjects(updatedProjects);
         useStore.getState().setSelectedProject(updatedProjects.find(p => p.id === selectedProject.id) || null);
+      } else if (action.type === 'CREATE_AGENT') {
+        await createAgent(selectedProject.id, action.data);
+      } else if (action.type === 'COMPLETE_TASK') {
+        await completeTask(selectedProject.id, action.data.taskId, action.data.logMessage);
+      } else if (action.type === 'ADD_LOG') {
+        await addProjectLog(selectedProject.id, action.data.type, action.data.message, action.data.details);
       }
     } catch (error) {
       console.error("Action execution failed", error);
@@ -122,9 +152,19 @@ export function ArchitectChat() {
                   </div>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsChatOpen(false)} className="rounded-full hover:bg-white/5">
-                <ChevronRight size={20} className="rotate-90" />
-              </Button>
+              <div className="flex items-center gap-4">
+                <div 
+                  className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 group cursor-pointer transition-colors hover:bg-white/10" 
+                  onClick={() => selectedProject && toggleAutonomy(selectedProject.id)}
+                  title="Enable Persistent Autonomy: Agents will continue advancing the venture even when you are offline."
+                >
+                  <div className={cn("w-2 h-2 rounded-full transition-all shadow-[0_0_8px]", isAutonomous ? "bg-green-500 shadow-green-500" : "bg-muted shadow-transparent")} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground">Full Autonomy</span>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setIsChatOpen(false)} className="rounded-full hover:bg-white/5">
+                  <ChevronRight size={20} className="rotate-90" />
+                </Button>
+              </div>
             </div>
 
             {/* Message History */}
@@ -135,7 +175,11 @@ export function ArchitectChat() {
                     <Compass className="mx-auto text-primary/20 animate-spin-slow" size={48} />
                     <div className="space-y-1">
                       <p className="text-sm font-bold">Awaiting Instructions</p>
-                      <p className="text-xs text-muted-foreground">I am ready to architect your next phase. What should we focus on?</p>
+                      {isAutonomous ? (
+                        <p className="text-xs text-green-500 animate-pulse">Autonomous Systems Engaged. Identifying next operational directive...</p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">I am ready to architect your next phase. What should we focus on?</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -176,20 +220,32 @@ export function ArchitectChat() {
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
                           <div className="relative z-10">
                             <div className="flex items-center gap-2 mb-2">
-                              <Sparkles size={14} className="text-primary animate-pulse" />
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Architectural Command</span>
+                              <Sparkles size={14} className={cn("text-primary", isAutonomous ? "animate-spin-slow" : "animate-pulse")} />
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                                {isAutonomous ? 'Autonomous Strategy Executed' : 'Architectural Strategy Proposed'}
+                              </span>
                             </div>
                             <p className="text-[11px] text-muted-foreground mb-4">
                               {action.type === 'UPDATE_MISSION' && `Requesting update to primary vision statement.`}
                               {action.type === 'GENERATE_ROADMAP' && `Generating specialized operational milestones.`}
                               {action.type === 'REFRESH_BRANDING' && `Synthesizing brand identity alignment.`}
+                              {action.type === 'CREATE_AGENT' && `Spawning specialized unit: ${action.data.name} (${action.data.role})`}
+                              {action.type === 'COMPLETE_TASK' && `Operational milestone achievement: Initiating state update.`}
+                              {action.type === 'ADD_LOG' && `System intelligence log emitted.`}
                             </p>
-                            <Button 
-                              className="w-full text-[10px] h-9 bg-primary hover:bg-primary/80 transition-all font-bold rounded-xl"
-                              onClick={() => executeAction(action)}
-                            >
-                              Execute Strategy
-                            </Button>
+                            {!isAutonomous && (
+                              <Button 
+                                className="w-full text-[10px] h-9 bg-primary hover:bg-primary/80 transition-all font-bold rounded-xl"
+                                onClick={() => executeAction(action)}
+                              >
+                                Execute Strategy
+                              </Button>
+                            )}
+                            {isAutonomous && (
+                              <div className="w-full text-[10px] h-9 bg-green-500/20 border border-green-500/30 text-green-500 flex items-center justify-center font-bold rounded-xl gap-2">
+                                <Wand2 size={12} className="animate-pulse" /> Strategy Processed
+                              </div>
+                            )}
                           </div>
                         </motion.div>
                       )}

@@ -95,7 +95,7 @@ export function AgentCard({ agent, projectId }: { agent: Agent, projectId: strin
   return (
     <Dialog>
       <DialogTrigger nativeButton={false} render={
-        <div className="aetheris-card hover:scale-[1.02] transition-all cursor-pointer group border border-border rounded-xl">
+        <div className="aetheris-card hover:scale-[1.02] transition-all cursor-pointer group border border-border rounded-xl mx-auto w-full">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="relative">
               <Avatar className="w-12 h-12 border border-accent/30 bg-secondary flex items-center justify-center">
