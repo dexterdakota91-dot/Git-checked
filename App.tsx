@@ -19,6 +19,11 @@ import { useStore } from './store/useStore';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from './lib/firebase';
 
+/**
+ * Renders the top-level application, providing global error handling, routing, and analytics.
+ *
+ * @returns The root JSX element: an ErrorBoundary that contains BrowserRouter and `AetherisApp`, followed by `Analytics` and `SpeedInsights` components.
+ */
 export default function App() {
   return (
     <>
@@ -33,6 +38,11 @@ export default function App() {
   );
 }
 
+/**
+ * Root application component that initializes global listeners, routing, Plaid setup, and renders the main app UI.
+ *
+ * @returns The rendered application tree (JSX) containing the theme provider, app shell, onboarding dialog (with real navigation), and the branding confirmation dialog.
+ */
 function AetherisApp() {
   // Initialize Global Firebase Listeners
   useFirebaseListeners();

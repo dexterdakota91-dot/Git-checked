@@ -10,6 +10,13 @@ import { cn } from '@/lib/utils';
 import { LoadingIndicator } from '../LoadingIndicator';
 import { useStore } from '../../store/useStore';
 
+/**
+ * Renders the chat interface for the Business Architect AI, displaying the message list, composer, and an agent-blocked banner when applicable.
+ *
+ * The view auto-scrolls to the newest message, aligns user messages to the right, and provides a text input and send button (disabled while loading). When a project agent has status `waiting-for-input`, a banner is shown with an action to open the Agents tab.
+ *
+ * @returns The ChatView React element.
+ */
 export default function ChatView() {
   const { 
     chatMessages, 

@@ -2,6 +2,14 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Render a styled progress root that applies default layout classes and includes a track with an indicator.
+ *
+ * @param className - Additional CSS class names to merge with the default layout
+ * @param children - Optional content placed before the track (e.g., a label)
+ * @param value - Progress value as a number between 0 and 100 representing completion percentage
+ * @returns The rendered progress root element
+ */
 function Progress({
   className,
   children,
@@ -23,6 +31,11 @@ function Progress({
   )
 }
 
+/**
+ * Renders the progress track element with default styling for use inside a Progress container.
+ *
+ * @returns The `ProgressPrimitive.Track` element styled as the track (background) of a progress bar.
+ */
 function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
@@ -36,6 +49,12 @@ function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   )
 }
 
+/**
+ * Renders the progress indicator with default styles and merges any additional classes.
+ *
+ * @param className - Additional CSS classes to apply to the indicator element
+ * @returns The progress indicator element with merged classes and forwarded props
+ */
 function ProgressIndicator({
   className,
   ...props
@@ -49,6 +68,11 @@ function ProgressIndicator({
   )
 }
 
+/**
+ * Renders a styled progress label element with default typography and forwarded props.
+ *
+ * @returns The rendered progress label element.
+ */
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   return (
     <ProgressPrimitive.Label
@@ -59,6 +83,11 @@ function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   )
 }
 
+/**
+ * Renders the progress value element aligned to the end with default typography and spacing.
+ *
+ * @returns The progress value element with default classes merged with `className` and remaining props forwarded to the underlying primitive.
+ */
 function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (
     <ProgressPrimitive.Value

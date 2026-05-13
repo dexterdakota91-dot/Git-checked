@@ -3,6 +3,13 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Renders the tabs root element with orientation-aware layout and merged class names.
+ *
+ * @param className - Additional CSS classes to apply to the root element
+ * @param orientation - Layout orientation; `"horizontal"` (default) keeps the default row layout, `"vertical"` stacks tabs in a column
+ * @returns The rendered TabsPrimitive.Root element with applied classes and forwarded props
+ */
 function Tabs({
   className,
   orientation = "horizontal",
@@ -36,6 +43,13 @@ const tabsListVariants = cva(
   }
 )
 
+/**
+ * Render a styled tabs list wrapper that applies variant-driven classes and forwards all list props.
+ *
+ * @param className - Additional class names to merge with the component's computed classes
+ * @param variant - Visual variant to apply; `"default"` renders a filled background, `"line"` renders a transparent, line-style list
+ * @returns The rendered `TabsPrimitive.List` element with `data-slot="tabs-list"`, `data-variant` set, and merged classes
+ */
 function TabsList({
   className,
   variant = "default",
@@ -51,6 +65,13 @@ function TabsList({
   )
 }
 
+/**
+ * Renders a tab trigger with variant- and state-aware styling.
+ *
+ * @param className - Additional class names to merge with the component's computed styles
+ * @param props - Remaining props forwarded to the underlying `TabsPrimitive.Tab`
+ * @returns The rendered tab trigger element
+ */
 function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   return (
     <TabsPrimitive.Tab
@@ -67,6 +88,13 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   )
 }
 
+/**
+ * Renders a Tabs content panel with base layout and typography styles.
+ *
+ * @param className - Optional additional CSS classes appended to the panel
+ * @param props - All other props are forwarded to the underlying panel component
+ * @returns The rendered tabs content panel element
+ */
 function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
     <TabsPrimitive.Panel

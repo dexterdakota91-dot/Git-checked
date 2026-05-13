@@ -1,6 +1,16 @@
 import React, { useEffect } from 'react';
 import { useStore } from '../store/useStore';
 
+/**
+ * Applies project branding colors as CSS custom properties on the document root when applicable.
+ *
+ * When the current active tab is not one of 'idea-lab', 'glossary', or 'legal', and the selected project
+ * provides a palette with at least three colors, sets `--color-primary`, `--color-secondary`, and `--color-accent`
+ * to the first three palette entries. Otherwise removes those CSS variables to revert to system defaults.
+ *
+ * @param children - React nodes to render within the provider
+ * @returns A React fragment containing `children`
+ */
 export function DynamicThemeProvider({ children }: { children: React.ReactNode }) {
   const { selectedProject, activeTab } = useStore();
 

@@ -2,6 +2,13 @@ import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Renders a themed separator element with configurable orientation.
+ *
+ * @param className - Additional CSS classes to apply to the separator
+ * @param orientation - Layout orientation of the separator, either `"horizontal"` or `"vertical"`; defaults to `"horizontal"`
+ * @returns A React element representing the separator
+ */
 function Separator({
   className,
   orientation = "horizontal",

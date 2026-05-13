@@ -22,6 +22,15 @@ interface OnboardingDialogProps {
   setActiveTab: (tab: string) => void;
 }
 
+/**
+ * Render a modal onboarding dialog that collects the user's US state, requires agreement to legal terms, and provides an initialization action.
+ *
+ * The primary action button is disabled until a state is selected. Clicking either "Terms of Service" or "Privacy Policy" closes the dialog and switches the active tab to `"legal"`.
+ *
+ * @param completeOnboarding - Callback invoked when the user clicks the "Initialize Environment" button
+ * @param setActiveTab - Callback to change the UI tab; called with `"legal"` when Terms/Privacy are opened
+ * @returns The JSX element for the onboarding modal dialog
+ */
 export function OnboardingDialog({
   completeOnboarding,
   setActiveTab
