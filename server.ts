@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import Stripe from "stripe";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getFirestore, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
 import fs from "fs";
 
@@ -17,9 +17,9 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Firebase Setup for Server
+// FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)
 const firebaseConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "firebase-applet-config.json"), "utf8"));
-const firebaseApp = initializeApp(firebaseConfig);
+const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 
 async function startServer() {
@@ -93,7 +93,8 @@ async function startServer() {
 
         try {
           const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview", // Switched to recommended stable model
+            // FIX: "gemini-3-flash-preview" does not exist — corrected to stable model
+            model: "gemini-2.0-flash",
             contents: `You are the Aetheris Ventures Business Architect running in PERSISTENT AUTONOMY MODE. 
             Your goal is to advance this venture while the user is offline.
             
@@ -197,10 +198,10 @@ async function startServer() {
 
           if (isQuota || isHighDemand || isInternal) {
             const reason = isQuota ? "Quota (429)" : isHighDemand ? "High Demand (503)" : "Internal Error (500)";
-            const cooldown = isQuota ? 2 : 5; // 5 minute cooldown for demand spikes
+            const cooldown = isQuota ? 2 : 5;
             console.error(`[Autonomy Engine] ${reason}. Cooling off for ${cooldown} minutes.`);
             nextAutonomyRun = Date.now() + cooldown * 60 * 1000;
-            break; // Stop current run
+            break;
           }
           console.error(`[Autonomy Engine] Generation error for ${projectId}:`, genError.message);
         }
