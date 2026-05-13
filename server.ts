@@ -22,6 +22,13 @@ const firebaseConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "firebase
 const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 
+/**
+ * Initialize and start the Express server, background Autonomy Engine, and related API routes.
+ *
+ * Sets up middleware, lazy-initialized clients (Gemini, Stripe, Plaid), the periodic Autonomy Engine
+ * that advances autonomous projects in Firestore, endpoints for Plaid link-token and Stripe checkout,
+ * and development/production static hosting (Vite dev middleware in dev, serving `dist` in production).
+ */
 async function startServer() {
   const app = express();
   const PORT = 3000;

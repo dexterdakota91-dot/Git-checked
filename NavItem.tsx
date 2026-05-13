@@ -1,6 +1,16 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Render a navigation button with an icon and label that reflects active and disabled states.
+ *
+ * @param icon - Icon element displayed before the label
+ * @param label - Text label for the navigation item
+ * @param active - When true, applies active styling, shows a left indicator bar and a pulsing dot
+ * @param onClick - Click handler invoked when the button is pressed
+ * @param disabled - When true, disables interaction and applies disabled styling
+ * @returns The rendered button element representing a navigation item
+ */
 export function NavItem({ icon, label, active, onClick, disabled }: { icon: React.ReactNode, label: string, active?: boolean, onClick: () => void, disabled?: boolean }) {
   return (
     <button

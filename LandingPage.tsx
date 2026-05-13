@@ -5,6 +5,14 @@ import { Lightbulb, Palette, LayoutDashboard, Bot, ChevronRight, Play } from 'lu
 import { useStore } from '../store/useStore';
 import { cn } from '@/lib/utils';
 
+/**
+ * Render the landing page UI with a hero section and a four-card "How It Works" walkthrough.
+ *
+ * The hero includes a primary call-to-action that navigates to the dashboard (and shows a verifying state when auth is not ready) and a secondary action that opens the idea lab.
+ *
+ * @param setActiveTab - Callback invoked with the target tab identifier when a CTA is activated (e.g., 'dashboard' or 'idea-lab').
+ * @returns A JSX element representing the landing page UI.
+ */
 export function LandingPage({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
   const { projects, selectedProject, isAuthReady, currentUser } = useStore();
   const hasProjects = projects && projects.length > 0;

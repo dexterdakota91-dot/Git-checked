@@ -2,6 +2,13 @@ import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Renders a styled switch control with configurable visual size.
+ *
+ * @param className - Additional CSS classes applied to the switch root, merged with the component's default classes
+ * @param size - Visual size of the switch; `"sm"` produces a smaller switch, `"default"` produces the standard size
+ * @returns The rendered JSX element representing the switch control
+ */
 function Switch({
   className,
   size = "default",

@@ -3,6 +3,15 @@ import { Input as InputPrimitive } from "@base-ui/react/input"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * A styled input component that forwards native `<input>` props to `InputPrimitive`.
+ *
+ * This component applies a predefined set of Tailwind-based utility classes, merges any
+ * provided `className` with those defaults, sets `data-slot="input"`, and forwards all other props.
+ *
+ * @param className - Additional CSS class names to merge with the component's default classes
+ * @returns A React element rendering a styled input element
+ */
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <InputPrimitive

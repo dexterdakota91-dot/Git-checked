@@ -51,6 +51,31 @@ interface SidebarContentProps {
 
 import { DeleteVentureButton } from '../DeleteVentureButton';
 
+/**
+ * Render the application sidebar with navigation, active projects list, and user controls.
+ *
+ * Renders:
+ * - Top logo that navigates to the landing tab
+ * - Optional selected project badge with branding
+ * - Navigation items that set the active tab (some disabled when no project is selected)
+ * - Scrollable "Active Projects" list with per-project selection and delete controls
+ * - Bottom user panel showing sign-in or account settings (including reset and sign out)
+ *
+ * @param props.activeTab - Currently selected tab identifier
+ * @param props.setActiveTab - Callback to change the active tab
+ * @param props.projects - List of projects to display in the Active Projects section
+ * @param props.selectedProject - Currently selected project or `null`
+ * @param props.setSelectedProject - Callback to select a project (or `null`)
+ * @param props.currentUser - Authenticated user info or `null`
+ * @param props.handleLogout - Callback to sign the current user out
+ * @param props.handleLogin - Callback to initiate sign-in (Google)
+ * @param props.deleteProject - Callback invoked to delete a project; receives `id` and optional mouse event
+ * @param props.resetAccount - Callback to perform account reset (clear all)
+ * @param props.setIsResetConfirmOpen - Callback to open/close the reset confirmation dialog
+ * @param props.isUserSettingsOpen - Whether the user settings dialog is open
+ * @param props.setIsUserSettingsOpen - Callback to open/close the user settings dialog
+ * @returns The sidebar JSX element
+ */
 export function SidebarContent({ 
   activeTab, 
   setActiveTab, 

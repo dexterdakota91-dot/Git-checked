@@ -21,6 +21,11 @@ const GLOSSARY_TERMS = {
   ]
 };
 
+/**
+ * Render the "Knowledge Base" glossary page that groups platform and industry terms into categorized cards.
+ *
+ * @returns A React element that displays glossary cards for each category in `GLOSSARY_TERMS`, showing each term and its definition.
+ */
 export default function GlossaryView() {
   return (
     <motion.div

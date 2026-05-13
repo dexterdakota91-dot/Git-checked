@@ -51,6 +51,15 @@ interface TaskManagementProps {
   onUpdateTasks: (tasks: Task[]) => void;
 }
 
+/**
+ * Render an operational roadmap UI for a project with controls to view, filter, add, suggest, and update tasks.
+ *
+ * The component displays the project's task list (excluding finished tasks), provides category filtering, a dialog for manual task creation, and an AI-assisted task suggestion flow. It enforces prerequisite checks when marking tasks complete (shows a transient error message if prerequisites are unmet). On first render for a given project, any tasks with `status === 'completed'` are moved back to `in-progress` with `progress` reset to 0 and the updated list is committed via `onUpdateTasks`.
+ *
+ * @param project - The project to manage; must provide `id`, `name`, `description`, `status`, and `tasks`.
+ * @param onUpdateTasks - Callback invoked with the updated task list whenever tasks are added or modified.
+ * @returns The component's JSX rendering the operational roadmap and task management UI.
+ */
 export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [filter, setFilter] = useState<TaskCategory | 'all'>('all');
@@ -491,6 +500,12 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
   );
 }
 
+/**
+ * Renders an inline SVG "tag" icon.
+ *
+ * @param className - Optional CSS class name applied to the SVG element
+ * @returns An SVG element representing a tag-shaped icon
+ */
 function Tag({ className }: { className?: string }) {
   return (
     <svg 

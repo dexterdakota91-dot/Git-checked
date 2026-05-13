@@ -5,6 +5,11 @@ import { auth, db, OperationType, handleFirestoreError, getRedirectResult } from
 import { useStore } from '../store/useStore';
 import { Project } from '../types';
 
+/**
+ * Synchronizes Firebase authentication and user projects with application state and completes redirect-based sign-ins on startup.
+ *
+ * Registers an authentication state listener that updates `currentUser` and `isAuthReady`, fetches the user's profile to decide whether to show onboarding or restore stored user state, and registers a real-time listener for the current user's `projects` collection (sorted by `createdAt`) after auth is ready. Also attempts to complete any pending redirect sign-in when the hook mounts and surfaces relevant login errors via the store. Listeners are detached on cleanup.
+ */
 export function useFirebaseListeners() {
   const { 
     setCurrentUser, 

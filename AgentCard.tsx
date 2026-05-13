@@ -50,6 +50,17 @@ const getStatusIndicator = (status: Agent['status']) => {
   }
 };
 
+/**
+ * Render an interactive agent summary card that opens a configuration dialog.
+ *
+ * The card shows the agent's icon, status, current task, specialty, and capabilities,
+ * and provides controls to edit the agent's name, select an archetype/role, toggle debug mode,
+ * and resolve awaiting user input when applicable.
+ *
+ * @param agent - Agent data used to populate the card and configuration controls
+ * @param projectId - Project identifier passed to update operations
+ * @returns The rendered React element for the agent card and its configuration dialog
+ */
 export function AgentCard({ agent, projectId }: { agent: Agent, projectId: string }) {
   const [newName, setNewName] = useState(agent.name);
   const [isSaving, setIsSaving] = useState(false);

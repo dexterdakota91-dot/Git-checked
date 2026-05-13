@@ -5,6 +5,13 @@ import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Render an avatar container with configurable size and composed styling.
+ *
+ * @param className - Additional CSS classes to merge with the component's base classes
+ * @param size - One of `"default"`, `"sm"`, or `"lg"`; controls size-specific styles. Defaults to `"default"`.
+ * @returns The avatar root element with `data-slot="avatar"`, `data-size` set to `size`, and merged class names
+ */
 function Avatar({
   className,
   size = "default",
@@ -25,6 +32,12 @@ function Avatar({
   )
 }
 
+/**
+ * Renders an avatar image element with default avatar-specific styling.
+ *
+ * @param className - Additional CSS class names merged with the component's default avatar image classes
+ * @returns The rendered avatar image element
+ */
 function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
   return (
     <AvatarPrimitive.Image
@@ -38,6 +51,14 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
   )
 }
 
+/**
+ * Renders a styled fallback element used when an avatar image is unavailable.
+ *
+ * The element centers its content, enforces a rounded shape, applies muted background
+ * and foreground text styles, and adapts text size for the small avatar variant.
+ *
+ * @returns The `AvatarPrimitive.Fallback` element with merged `className` and forwarded props.
+ */
 function AvatarFallback({
   className,
   ...props
@@ -54,6 +75,13 @@ function AvatarFallback({
   )
 }
 
+/**
+ * Renders a positioned badge overlay for an avatar.
+ *
+ * @param className - Additional class names to merge with the component's base styles.
+ * @param props - Additional span attributes forwarded to the badge element.
+ * @returns The badge element positioned at the avatar's bottom-right.
+ */
 function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
@@ -70,6 +98,14 @@ function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
   )
 }
 
+/**
+ * Renders a horizontally stacked, overlapping avatar group container.
+ *
+ * The container sets `data-slot="avatar-group"`, applies overlapping spacing and ring styling for child avatars, merges incoming `className`, and forwards remaining props to the root `div`.
+ *
+ * @param className - Additional CSS classes to apply to the container
+ * @returns A `div` element that groups and visually overlaps avatar children
+ */
 function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -83,6 +119,13 @@ function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/**
+ * Renders a circular count indicator for an avatar group.
+ *
+ * The element applies muted background/foreground and ring styling and adjusts its size based on the parent avatar group's `data-size`.
+ *
+ * @returns The rendered count indicator element.
+ */
 function AvatarGroupCount({
   className,
   ...props
