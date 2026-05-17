@@ -20,6 +20,7 @@ export interface ProjectSlice {
   addProjectLog: (projectId: string, type: 'info' | 'success' | 'thought' | 'decision' | 'error', message: string, details?: string) => Promise<void>;
   createAgent: (projectId: string, agent: { name: string, role: string, specialty: string, capabilities: string[] }) => Promise<void>;
   completeTask: (projectId: string, taskId: string, logMessage?: string) => Promise<void>;
+  resetProjectOnLogout: () => void;
 }
 
 export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = (set, get) => ({
@@ -29,6 +30,7 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
   })),
   selectedProject: null,
   setSelectedProject: (project) => set({ selectedProject: project }),
+  resetProjectOnLogout: () => set({ selectedProject: null }),
 
   addProjectLog: async (projectId: string, type, message, details) => {
     const { projects } = get();

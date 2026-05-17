@@ -3,6 +3,8 @@ import { User, signInWithPopup, signInWithRedirect, signOut } from 'firebase/aut
 import { auth, googleProvider } from '../../lib/firebase';
 import { AppState } from '../useStore';
 
+export type USState = string; // E.g., 'California', 'New York' or ''
+
 export interface AuthSlice {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
@@ -13,15 +15,24 @@ export interface AuthSlice {
   setLoginError: (error: string | null) => void;
   isLoggingIn: boolean;
   setIsLoggingIn: (isLoggingIn: boolean) => void;
-  userState: string;
-  setUserState: (state: string) => void;
+  /**
+   * Represents the user's geographical US State (e.g., 'California', 'New York').
+   * This is used to provide state-specific business compliance tips and requirements.
+   * Allowed values are any valid US State name or an empty string if not yet selected.
+   */
+  userState: USState;
+  /**
+   * Updates the user's geographical US State selection.
+   * @param state - The selected US state name or empty string.
+   */
+  setUserState: (state: USState) => void;
 
   // Auth Actions
   handleLogin: () => Promise<void>;
   handleLogout: () => Promise<void>;
 }
 
-export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) => ({
+export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
   currentUser: null,
   setCurrentUser: (user) => set({ currentUser: user }),
   isAuthReady: false,
@@ -71,7 +82,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
   handleLogout: async () => {
     try {
       await signOut(auth);
-      set({ activeTab: 'landing', selectedProject: null, loginError: null });
+      set({ currentUser: null, loginError: null });
+      get().resetUiOnLogout();
+      get().resetProjectOnLogout();
     } catch (error) {
       console.error("Logout failed", error);
     }

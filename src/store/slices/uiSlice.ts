@@ -12,6 +12,7 @@ export interface UISlice {
   setIsUserSettingsOpen: (isOpen: boolean) => void;
   isResetConfirmOpen: boolean;
   setIsResetConfirmOpen: (isOpen: boolean) => void;
+  resetUiOnLogout: () => void;
 }
 
 export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set) => ({
@@ -25,4 +26,5 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set) => (
   setIsUserSettingsOpen: (isOpen) => set({ isUserSettingsOpen: isOpen }),
   isResetConfirmOpen: false,
   setIsResetConfirmOpen: (isOpen) => set({ isResetConfirmOpen: isOpen }),
+  resetUiOnLogout: () => set({ activeTab: 'landing', showOnboarding: false, isVentureSettingsOpen: false, isUserSettingsOpen: false, isResetConfirmOpen: false }),
 });
