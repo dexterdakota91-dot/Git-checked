@@ -272,37 +272,40 @@ export default function ProjectDetailView({
             <CardContent>
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-4 font-mono text-[11px]">
-                  {(selectedProject.logs || []).map(log => {
-                    const agent = (selectedProject.agents || []).find(a => a.id === log.agentId);
-                    if ((log.type === 'thought' || log.type === 'decision') && !agent?.debugMode) return null;
-                    
-                    return (
-                      <div key={log.id} className="flex gap-3 animate-in fade-in slide-in-from-left-1">
-                        <span className="text-muted-foreground shrink-0">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                        <div className="flex flex-col gap-1">
-                          <span className={cn(
-                            "font-bold uppercase text-[9px]",
-                            log.type === 'success' ? "text-primary" : 
-                            log.type === 'error' ? "text-destructive" : 
-                            log.type === 'thought' ? "text-accent" :
-                            log.type === 'decision' ? "text-blue-400" : "text-muted-foreground"
-                          )}>
-                            {log.type} {agent ? `(${agent.name})` : ''}
-                          </span>
-                          <span className={cn(
-                            log.type === 'error' ? "text-destructive" : "text-foreground"
-                          )}>
-                            {log.message}
-                          </span>
-                          {log.details && (
-                            <div className="p-2 rounded bg-black/20 text-[10px] text-muted-foreground border-l-2 border-muted">
-                              {log.details}
-                            </div>
-                          )}
+                  {(() => {
+                    const agentMap = new Map((selectedProject.agents || []).map(a => [a.id, a]));
+                    return (selectedProject.logs || []).map(log => {
+                      const agent = log.agentId ? agentMap.get(log.agentId) : undefined;
+                      if ((log.type === 'thought' || log.type === 'decision') && !agent?.debugMode) return null;
+
+                      return (
+                        <div key={log.id} className="flex gap-3 animate-in fade-in slide-in-from-left-1">
+                          <span className="text-muted-foreground shrink-0">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                          <div className="flex flex-col gap-1">
+                            <span className={cn(
+                              "font-bold uppercase text-[9px]",
+                              log.type === 'success' ? "text-primary" :
+                              log.type === 'error' ? "text-destructive" :
+                              log.type === 'thought' ? "text-accent" :
+                              log.type === 'decision' ? "text-blue-400" : "text-muted-foreground"
+                            )}>
+                              {log.type} {agent ? `(${agent.name})` : ''}
+                            </span>
+                            <span className={cn(
+                              log.type === 'error' ? "text-destructive" : "text-foreground"
+                            )}>
+                              {log.message}
+                            </span>
+                            {log.details && (
+                              <div className="p-2 rounded bg-black/20 text-[10px] text-muted-foreground border-l-2 border-muted">
+                                {log.details}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               </ScrollArea>
             </CardContent>
