@@ -38,8 +38,8 @@ describe('extractJson', () => {
   });
 
   it('should throw an error for malformed JSON after matching brackets', () => {
-    const raw = 'Here is it: { "key": "value" '; // missing closing brace
-    expect(() => extractJson(raw)).toThrow('No JSON found in AI response.');
+    const raw = 'Here is it: { "key": value }'; // missing quotes around value
+    expect(() => extractJson(raw)).toThrow(/is not valid JSON|Unexpected token/);
   });
 
   it('should correctly parse json with newlines and white space', () => {
