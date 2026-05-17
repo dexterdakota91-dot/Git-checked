@@ -13,6 +13,8 @@ export interface AuthSlice {
   setLoginError: (error: string | null) => void;
   isLoggingIn: boolean;
   setIsLoggingIn: (isLoggingIn: boolean) => void;
+  userState: string;
+  setUserState: (state: string) => void;
 
   // Auth Actions
   handleLogin: () => Promise<void>;
@@ -28,6 +30,8 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
   setLoginError: (error) => set({ loginError: error }),
   isLoggingIn: false,
   setIsLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
+  userState: '',
+  setUserState: (state) => set({ userState: state }),
 
   handleLogin: async () => {
     set({ loginError: null, isLoggingIn: true });
