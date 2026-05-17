@@ -60,7 +60,12 @@ export function useFirebaseListeners() {
             setShowOnboarding(true);
           } else {
             const stateVal = userDoc.data().state;
-            setUserState(isValidUSState(stateVal) ? stateVal : '');
+            if (isValidUSState(stateVal)) {
+              setUserState(stateVal);
+            } else {
+              setUserState('');
+              setShowOnboarding(true);
+            }
           }
         }).catch(error => {
           console.error("Error fetching user profile:", error);
