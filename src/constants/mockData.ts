@@ -129,3 +129,7 @@ export const US_STATES = [
 ] as const;
 
 export type USState = typeof US_STATES[number];
+
+export function isValidUSState(value: unknown): value is USState {
+  return typeof value === 'string' && (US_STATES as readonly string[]).includes(value);
+}

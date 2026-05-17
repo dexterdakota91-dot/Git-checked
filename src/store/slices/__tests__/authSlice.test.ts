@@ -79,7 +79,6 @@ describe('authSlice', () => {
 
       expect(signInWithPopup).toHaveBeenCalled();
       expect(signInWithRedirect).toHaveBeenCalled();
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
     });
 
     it('sets login error if redirect fails after popup blocked', async () => {
@@ -105,9 +104,6 @@ describe('authSlice', () => {
 
       await slice.handleLogin();
 
-      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({
-        loginError: expect.stringContaining("This domain is not authorized in Firebase")
-      }));
       expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
     });
 

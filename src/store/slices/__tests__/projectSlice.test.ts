@@ -20,9 +20,9 @@ const mockAddDoc = vi.fn(() => Promise.resolve({ id: 'new-project-id' }));
 
 vi.mock('firebase/firestore', () => ({
   doc: vi.fn(() => ({ id: 'mock-doc-ref' })),
-  updateDoc: (...args: any[]) => mockUpdateDoc(...args),
-  deleteDoc: (...args: any[]) => mockDeleteDoc(...args),
-  addDoc: (...args: any[]) => mockAddDoc(...args),
+  updateDoc: (...args: any[]) => mockUpdateDoc.apply(null, args),
+  deleteDoc: (...args: any[]) => mockDeleteDoc.apply(null, args),
+  addDoc: (...args: any[]) => mockAddDoc.apply(null, args),
   collection: vi.fn(() => ({ id: 'mock-collection-ref' })),
 }));
 
@@ -36,8 +36,8 @@ vi.mock('../../../services/gemini', () => ({
 }));
 
 // Create a mock store for testing
-const useTestStore = create((set, get, api) => ({
-  ...createProjectSlice(set, get, api),
+const useTestStore = create<any>((set: any, get: any, api: any) => ({
+  ...createProjectSlice(set, get, api) as any,
   // Add required state from other slices for testing
   currentUser: { uid: 'user-123' },
   refinedTemplates: [],
