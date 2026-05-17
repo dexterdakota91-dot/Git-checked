@@ -3,11 +3,11 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cn } from "@/lib/utils"
 
 /**
- * Render a styled progress root that applies default layout classes and includes a track with an indicator.
+ * Renders a progress root with default layout classes, containing a track and indicator.
  *
  * @param className - Additional CSS class names to merge with the default layout
  * @param children - Optional content placed before the track (e.g., a label)
- * @param value - Progress value as a number between 0 and 100 representing completion percentage
+ * @param value - Progress value between 0 and 100 representing completion percentage
  * @returns The rendered progress root element
  */
 function Progress({

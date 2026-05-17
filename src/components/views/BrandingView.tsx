@@ -17,12 +17,12 @@ import { db } from '../../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 /**
- * Render the Venture Onboarding wizard for the current project, walking through naming, visual identity, mission, logo, voice/tone, and a final summary.
+ * Renders the Venture Onboarding wizard for the current project, guiding users through naming, visual identity, mission, logo, voice/tone, and a final summary.
  *
- * If no project is selected, renders a centered "No venture selected." message.
+ * If no project is selected, displays a centered "No venture selected." message.
  *
- * @param setActiveTab - Optional callback invoked with a tab identifier (for example `'dashboard'`) when the summary step requests navigation.
- * @returns The onboarding wizard UI for the selected project, including step headers and the active step card.
+ * @param setActiveTab - Optional callback invoked with a tab identifier (e.g., `'dashboard'`) when the summary step requests navigation.
+ * @returns The onboarding wizard UI for the selected project, showing step headers and the active step card.
  */
 export default function BrandingView({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const { 
