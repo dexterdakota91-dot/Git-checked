@@ -16,6 +16,14 @@ import { generateBranding, generateMissionStatements, generatePalettes, generate
 import { db } from '../../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
+/**
+ * Render the Venture Onboarding wizard for the current project, walking through naming, visual identity, mission, logo, voice/tone, and a final summary.
+ *
+ * If no project is selected, renders a centered "No venture selected." message.
+ *
+ * @param setActiveTab - Optional callback invoked with a tab identifier (for example `'dashboard'`) when the summary step requests navigation.
+ * @returns The onboarding wizard UI for the selected project, including step headers and the active step card.
+ */
 export default function BrandingView({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const { 
     selectedProject, 
@@ -68,7 +76,12 @@ export default function BrandingView({ setActiveTab }: { setActiveTab?: (tab: st
   );
 }
 
-// Cards
+/**
+ * Card UI that lets the user choose a venture name via manual input, AI-generated suggestions, or an automated "architect" pick, and verifies availability before saving.
+ *
+ * @param onComplete - Callback invoked after a chosen name has been persisted to the venture branding store and the naming step is finished
+ * @returns The rendered NamingCard React element
+ */
 function NamingCard({ onComplete }: { onComplete: () => void }) {
   const [name, setName] = React.useState('');
   const [options, setOptions] = React.useState<string[]>([]);
@@ -169,6 +182,12 @@ function NamingCard({ onComplete }: { onComplete: () => void }) {
   );
 }
 
+/**
+ * Renders the color-selection step UI allowing users to generate, preview, and choose a color palette for the venture.
+ *
+ * @param onComplete - Callback invoked after a palette is saved and the step completes.
+ * @returns A JSX element containing controls to generate palettes, use an "Architect's Pick", preview generated palettes, and select a palette which is persisted to the venture branding.
+ */
 function ColorCard({ onComplete }: { onComplete: () => void }) {
   const { updateVentureBranding, selectedProject } = useStore();
   const [palettes, setPalettes] = React.useState<any[]>([]);
@@ -238,6 +257,16 @@ function ColorCard({ onComplete }: { onComplete: () => void }) {
   );
 }
 
+/**
+ * Renders the Mission Statement step card for the branding wizard.
+ *
+ * The card lets the user enter a mission statement manually, explore AI-generated options,
+ * or accept an "Architect Choice" which selects the first generated mission. When a mission
+ * is saved it updates the venture branding and signals completion.
+ *
+ * @param onComplete - Callback invoked after the mission statement is persisted and the step completes
+ * @returns The rendered mission statement card element
+ */
 function MissionCard({ onComplete }: { onComplete: () => void }) {
     const { updateVentureBranding, selectedProject } = useStore();
     const [mission, setMission] = React.useState('');
@@ -304,6 +333,12 @@ function MissionCard({ onComplete }: { onComplete: () => void }) {
     );
 }
 
+/**
+ * Renders the "Logo Design Concepts" card which lets the user generate logo concepts, apply an AI "Architect's" pick, and select a concept to save as the project's logo description.
+ *
+ * @param onComplete - Callback invoked after a logo concept is saved and the card completes its flow
+ * @returns The rendered LogoCard JSX element
+ */
 function LogoCard({ onComplete }: { onComplete: () => void }) {
     const { updateVentureBranding, selectedProject } = useStore();
     const [concepts, setConcepts] = React.useState<any[]>([]);
@@ -365,6 +400,11 @@ function LogoCard({ onComplete }: { onComplete: () => void }) {
     );
 }
 
+/**
+ * Collects brand voice and target audience, offers AI-assisted generation or an "architect" auto-pick, and saves the selections to the active venture branding.
+ *
+ * @param onComplete - Called after branding is updated and the card completes (advances the wizard)
+ */
 function VoiceToneCard({ onComplete }: { onComplete: () => void }) {
     const { updateVentureBranding, selectedProject } = useStore();
     const [tone, setTone] = React.useState('');
@@ -433,6 +473,13 @@ function VoiceToneCard({ onComplete }: { onComplete: () => void }) {
     );
 }
 
+/**
+ * Renders the final branding mockup and readout for the selected venture and provides a confirmation action to finish onboarding.
+ *
+ * @param onComplete - Callback invoked when the user confirms completion of the branding wizard; parent should reset or advance the wizard.
+ * @param setActiveTab - Optional callback to switch the application's active tab (called with `'dashboard'` on confirm).
+ * @returns The JSX element displaying a live app mockup, a complete branding readout, and a confirm button.
+ */
 function SummaryCard({ onComplete, setActiveTab }: { onComplete: () => void, setActiveTab?: (tab: string) => void }) {
     const { selectedProject } = useStore();
     

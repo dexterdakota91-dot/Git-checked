@@ -21,6 +21,13 @@ import { TaskManagement } from '../TaskManagement';
 import { ElectricityTracer } from '../ElectricityTracer';
 import { DeleteVentureButton } from '../DeleteVentureButton';
 
+/**
+ * Render a detailed view for a selected project, including venture settings, agent list, task management, live logs, and project health metrics.
+ *
+ * @param selectedProject - The project whose details are displayed and edited within this view.
+ * @param setActiveTab - Callback to change the parent UI tab (e.g., navigate to the branding lab).
+ * @returns The JSX element for the project detail view.
+ */
 export default function ProjectDetailView({ 
   selectedProject, 
   setActiveTab

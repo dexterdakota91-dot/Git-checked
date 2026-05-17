@@ -3,10 +3,15 @@ import { motion } from 'motion/react';
 import { useStore } from '../../store/useStore';
 import { MonolithLogo, AetherisTextLogo } from '../logos/LogoComponents';
 import { Button } from '@/components/ui/button';
-import { LogIn, Sparkles, ShieldCheck, Zap } from 'lucide-react';
+import { LogIn, Sparkles, ShieldCheck, Zap, AlertCircle, Loader2 } from 'lucide-react';
 
+/**
+ * Render the full-screen, centered login interface with branding, animated background effects, a Google sign-in button (with loading/disabled state), conditional error alert, feature badges, and a system-status footer.
+ *
+ * @returns A JSX element that renders the complete login view.
+ */
 export function LoginView() {
-  const { handleLogin } = useStore();
+  const { handleLogin, loginError, isLoggingIn } = useStore();
 
   return (
     <div className="fixed inset-0 bg-background flex items-center justify-center overflow-hidden">
@@ -56,13 +61,36 @@ export function LoginView() {
           </div>
 
           <div className="space-y-4 w-full pt-4">
+            {/* FIX: Show error message when auth fails */}
+            {loginError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-left"
+              >
+                <AlertCircle size={16} className="text-red-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-red-300 leading-relaxed">{loginError}</p>
+              </motion.div>
+            )}
+
+            {/* FIX: Added isLoggingIn loading state and disabled state to prevent double-click */}
             <Button 
               size="lg" 
-              className="w-full bg-white text-black hover:bg-zinc-200 transition-all duration-300 h-14 text-base font-bold shadow-[0_0_20px_rgba(255,255,255,0.1)] group"
+              className="w-full bg-white text-black hover:bg-zinc-200 transition-all duration-300 h-14 text-base font-bold shadow-[0_0_20px_rgba(255,255,255,0.1)] group disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={handleLogin}
+              disabled={isLoggingIn}
             >
-              <LogIn className="mr-2 group-hover:translate-x-1 transition-transform" size={20} />
-              Sign In with Google
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="mr-2 animate-spin" size={20} />
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 group-hover:translate-x-1 transition-transform" size={20} />
+                  Sign In with Google
+                </>
+              )}
             </Button>
             
             <div className="grid grid-cols-3 gap-4 pt-6">

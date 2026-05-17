@@ -20,6 +20,15 @@ interface AnalyticsViewProps {
   projects: Project[];
 }
 
+/**
+ * Render the Global Analytics dashboard for a list of projects.
+ *
+ * Displays summary statistic cards (total portfolio value, average agent efficiency, total active agents),
+ * a revenue growth area chart, and a scrollable list of top-performing ventures derived from `projects`.
+ *
+ * @param projects - Array of project objects used to compute metrics, chart data, and the ranked ventures list.
+ * @returns The Analytics dashboard React element.
+ */
 export default function AnalyticsView({ projects }: AnalyticsViewProps) {
   return (
     <motion.div

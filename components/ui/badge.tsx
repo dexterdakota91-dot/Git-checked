@@ -27,6 +27,13 @@ const badgeVariants = cva(
   }
 )
 
+/**
+ * Render a span badge element with variant-driven styling and merged props.
+ *
+ * @param variant - The visual variant to apply (e.g., "default", "secondary", "destructive", "outline", "ghost", "link"); defaults to `"default"`.
+ * @param render - Optional render override forwarded to the rendering helper.
+ * @returns The rendered badge element with the selected variant classes and merged props.
+ */
 function Badge({
   className,
   variant = "default",

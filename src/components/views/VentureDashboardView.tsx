@@ -12,6 +12,17 @@ interface VentureDashboardViewProps {
   setActiveTab: (tab: string) => void;
 }
 
+/**
+ * Render the venture dashboard for a selected project.
+ *
+ * Displays branding (logo, name, mission statement), a color palette, audience and tone details,
+ * and a venture status card with progress indicators and next steps. Includes controls to return
+ * to Mission Control and to open a preview page.
+ *
+ * @param selectedProject - Project whose branding, agents, and metadata populate the dashboard
+ * @param setActiveTab - Callback invoked with the target tab name when navigation is requested
+ * @returns A JSX element containing the venture dashboard UI
+ */
 export default function VentureDashboardView({ selectedProject, setActiveTab }: VentureDashboardViewProps) {
   return (
     <motion.div

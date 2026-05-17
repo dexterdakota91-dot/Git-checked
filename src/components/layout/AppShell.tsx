@@ -26,6 +26,13 @@ const ChatView = React.lazy(() => import('../views/ChatView'));
 const LandingPage = React.lazy(() => import('../LandingPage').then(module => ({ default: module.LandingPage })));
 const LoginView = React.lazy(() => import('../views/LoginView').then(module => ({ default: module.LoginView })));
 
+/**
+ * Top-level application shell that gates access by authentication and renders the app layout, navigation, and routed views.
+ *
+ * Renders an initialization screen while auth is loading, a login view when auth is ready but no user is present, the landing page for the landing route, or the authenticated app layout for other routes. The authenticated layout includes responsive sidebars, a header with navigation and search, an optional venture context subheader when a project is selected, a Suspense-wrapped routed content area with fallback loaders, an AI acknowledgement footer, and a persistent architect chat slide-out.
+ *
+ * @returns The React element for the application shell containing authentication gating, navigation, routed views, and ancillary UI (sidebars, header, footers, and chat).
+ */
 export function AppShell() {
   const { 
     selectedProject,

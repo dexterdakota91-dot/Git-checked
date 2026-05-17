@@ -5,6 +5,14 @@ import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Wraps Base UI's ScrollArea Root with a styled Viewport, a default ScrollBar, and a Corner.
+ *
+ * @param className - Additional class names applied to the root container
+ * @param children - Elements rendered inside the scroll viewport
+ * @param props - Remaining props forwarded to `ScrollAreaPrimitive.Root`
+ * @returns The rendered scroll area element
+ */
 function ScrollArea({
   className,
   children,
@@ -28,6 +36,13 @@ function ScrollArea({
   )
 }
 
+/**
+ * Render a styled scrollbar for a ScrollArea with configurable orientation.
+ *
+ * @param className - Additional CSS classes to apply to the scrollbar container
+ * @param orientation - Scrollbar orientation, either `"vertical"` or `"horizontal"`
+ * @returns A ScrollArea scrollbar element containing a thumb element
+ */
 function ScrollBar({
   className,
   orientation = "vertical",

@@ -1,10 +1,15 @@
 import { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc, query, collection, where, onSnapshot } from 'firebase/firestore';
-import { auth, db, OperationType, handleFirestoreError } from '../lib/firebase';
+import { auth, db, OperationType, handleFirestoreError, getRedirectResult } from '../lib/firebase';
 import { useStore } from '../store/useStore';
 import { Project } from '../types';
 
+/**
+ * Synchronizes Firebase authentication and user projects with application state and completes redirect-based sign-ins on startup.
+ *
+ * Registers an authentication state listener that updates `currentUser` and `isAuthReady`, fetches the user's profile to decide whether to show onboarding or restore stored user state, and registers a real-time listener for the current user's `projects` collection (sorted by `createdAt`) after auth is ready. Also attempts to complete any pending redirect sign-in when the hook mounts and surfaces relevant login errors via the store. Listeners are detached on cleanup.
+ */
 export function useFirebaseListeners() {
   const { 
     setCurrentUser, 
@@ -12,9 +17,34 @@ export function useFirebaseListeners() {
     setShowOnboarding, 
     setUserState, 
     setProjects,
+    setLoginError,
     currentUser,
     isAuthReady
   } = useStore();
+
+  // FIX: Handle redirect sign-in result on app startup.
+  // When signInWithRedirect is used (popup blocked), Firebase redirects back
+  // to the app. getRedirectResult() must be called to complete the sign-in.
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          // Redirect sign-in succeeded — onAuthStateChanged below will fire automatically
+          console.log("Redirect sign-in successful:", result.user.email);
+        }
+      })
+      .catch((error: any) => {
+        if (error?.code === 'auth/unauthorized-domain') {
+          setLoginError(
+            "This domain is not authorized in Firebase. Add your app URL to Firebase Console → Authentication → Settings → Authorized Domains."
+          );
+        } else if (error?.code !== 'auth/no-current-user') {
+          console.error("Redirect sign-in error:", error);
+          setLoginError(error?.message || "Sign-in failed. Please try again.");
+        }
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount only
 
   // Auth Listener
   useEffect(() => {

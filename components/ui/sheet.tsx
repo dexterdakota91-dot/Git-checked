@@ -7,22 +7,52 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
+/**
+ * Top-level Sheet component that renders the sheet root element.
+ *
+ * @param props - Props forwarded to the underlying `SheetPrimitive.Root`
+ * @returns The rendered sheet root element with `data-slot="sheet"`
+ */
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
+/**
+ * Renders a Sheet trigger that forwards props to the underlying dialog primitive.
+ *
+ * @param render - Optional custom React element to use as the trigger's render output
+ * @returns A trigger element that opens or toggles the Sheet
+ */
 function SheetTrigger({ render, ...props }: SheetPrimitive.Trigger.Props & { render?: React.ReactElement }) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" render={render} {...props} />
 }
 
+/**
+ * Renders a sheet close control and forwards all provided props to the underlying close primitive.
+ *
+ * @param props - Props applied to the close control element.
+ * @returns The close control element for use inside a Sheet.
+ */
 function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
+/**
+ * Provides a portal container for sheet contents using the underlying dialog primitive.
+ *
+ * @returns A portal element that mounts sheet content into the document using the dialog primitive.
+ */
 function SheetPortal({ ...props }: SheetPrimitive.Portal.Props) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
+/**
+ * Renders the sheet backdrop with default overlay styling.
+ *
+ * @param className - Additional CSS classes to merge with the default overlay styles
+ * @param props - Additional props forwarded to the underlying Backdrop primitive
+ * @returns The backdrop element used as the sheet overlay
+ */
 function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
   return (
     <SheetPrimitive.Backdrop
@@ -36,6 +66,13 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
   )
 }
 
+/**
+ * Render the sheet's content panel inside a portal with an overlay and optional close control.
+ *
+ * @param side - The edge of the viewport from which the sheet appears: `"top"`, `"right"`, `"bottom"`, or `"left"`.
+ * @param showCloseButton - Whether a close button is rendered inside the sheet (defaults to `true`).
+ * @returns The sheet content element (wrapped in a portal) configured with side-based positioning, styles, and an optional close control.
+ */
 function SheetContent({
   className,
   children,
@@ -80,6 +117,14 @@ function SheetContent({
   )
 }
 
+/**
+ * Layout wrapper for sheet header content.
+ *
+ * Merges default header layout classes with any provided `className` and forwards other `div` props.
+ *
+ * @param className - Additional class names appended to the default `"flex flex-col gap-0.5 p-4"`
+ * @returns A `div` element that wraps header content with header-specific layout classes
+ */
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -90,6 +135,13 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/**
+ * Layout wrapper for sheet footer content.
+ *
+ * Renders a div that serves as the sheet's footer container with default spacing and layout classes; any provided `className` is merged with the defaults.
+ *
+ * @returns The footer container element rendered as a `div`.
+ */
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -100,6 +152,12 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/**
+ * Renders the sheet's title element with default heading typography.
+ *
+ * @param className - Additional CSS classes to merge with the component's default heading styles
+ * @returns A `SheetPrimitive.Title` element with heading typography and the provided `className` merged into its class list
+ */
 function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   return (
     <SheetPrimitive.Title
@@ -113,6 +171,11 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   )
 }
 
+/**
+ * Renders a sheet description element with small, muted text styling.
+ *
+ * @returns A `SheetPrimitive.Description` element with the default `"text-sm text-muted-foreground"` classes merged with any provided `className`.
+ */
 function SheetDescription({
   className,
   ...props

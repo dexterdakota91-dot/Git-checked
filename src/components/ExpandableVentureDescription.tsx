@@ -5,6 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Project } from '../types';
 import { cn } from '@/lib/utils';
 
+/**
+ * Render an expandable venture description panel for a Project.
+ *
+ * Displays the project's short description with a gradient fade and a toggle button that expands
+ * an animated details panel containing Market Outlook, Revenue Strategy, Growth Projections, and
+ * a Strategic Timeline. Uses safe fallbacks when project fields are missing.
+ *
+ * @param project - The project data used to populate description, outlook, revenue strategy,
+ *   projections (month1/month3/month6/month12), and timeline entries.
+ * @returns A React element representing the expandable venture description UI.
+ */
 export function ExpandableVentureDescription({ project }: { project: Project }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
