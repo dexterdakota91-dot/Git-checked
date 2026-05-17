@@ -47,7 +47,6 @@ function AetherisApp() {
   // Initialize Global Firebase Listeners
   useFirebaseListeners();
 
-  // FIX: useNavigate must be inside BrowserRouter — moved here from AppShell wrapper
   const navigate = useNavigate();
 
   const { 
@@ -126,6 +125,7 @@ function AetherisApp() {
         <OnboardingDialog 
           completeOnboarding={completeOnboarding}
           setActiveTab={handleSetActiveTab}
+          navigate={navigate}
         />
 
         {/* Branding Confirmation Dialog */}

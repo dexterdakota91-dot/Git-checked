@@ -11,15 +11,17 @@ import {
 import { Button, buttonVariants } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { ElectricityTracer } from './ElectricityTracer';
-import { US_STATES } from '../constants/mockData';
+import { US_STATES, USState } from '../constants/mockData';
 import { cn } from '@/lib/utils';
 import { useStore } from '../store/useStore';
+import { NavigateFunction } from 'react-router-dom';
 
 import { AetherisLogo } from './logos/LogoComponents';
 
 interface OnboardingDialogProps {
   completeOnboarding: () => void;
   setActiveTab: (tab: string) => void;
+  navigate: NavigateFunction;
 }
 
 /**
@@ -33,7 +35,8 @@ interface OnboardingDialogProps {
  */
 export function OnboardingDialog({
   completeOnboarding,
-  setActiveTab
+  setActiveTab,
+  navigate
 }: OnboardingDialogProps) {
   const { 
     showOnboarding, setShowOnboarding,
@@ -57,7 +60,7 @@ export function OnboardingDialog({
             <select 
               className="w-full bg-secondary border border-border rounded-md p-2 text-sm"
               value={userState}
-              onChange={(e) => setUserState(e.target.value)}
+              onChange={(e) => setUserState(e.target.value as USState | '')}
             >
               <option value="">Select a state...</option>
               {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}

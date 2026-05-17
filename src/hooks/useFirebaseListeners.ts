@@ -3,6 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc, query, collection, where, onSnapshot } from 'firebase/firestore';
 import { auth, db, OperationType, handleFirestoreError, getRedirectResult } from '../lib/firebase';
 import { useStore } from '../store/useStore';
+import { USState } from '../constants/mockData';
 import { Project } from '../types';
 
 /**
@@ -30,7 +31,7 @@ export function useFirebaseListeners() {
       .then((result) => {
         if (result?.user) {
           // Redirect sign-in succeeded — onAuthStateChanged below will fire automatically
-          console.log("Redirect sign-in successful:", result.user.email);
+
         }
       })
       .catch((error: any) => {
@@ -58,7 +59,7 @@ export function useFirebaseListeners() {
           if (!userDoc.exists()) {
             setShowOnboarding(true);
           } else {
-            setUserState(userDoc.data().state || '');
+            setUserState((userDoc.data().state as USState) || '');
           }
         }).catch(error => {
           console.error("Error fetching user profile:", error);
