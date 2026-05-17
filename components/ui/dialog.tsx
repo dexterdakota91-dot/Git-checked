@@ -6,9 +6,9 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { X } from "lucide-react"
 
 /**
- * Renders the dialog root element with a `data-slot="dialog"` attribute and forwards all props.
+ * Wraps `DialogPrimitive.Root`, attaching `data-slot="dialog"` and forwarding all received props.
  *
- * @param props - Props to pass through to the dialog root element
+ * @param props - Props to pass through to `DialogPrimitive.Root`
  * @returns The rendered dialog root element
  */
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -16,10 +16,10 @@ function Dialog({ ...props }: DialogPrimitive.Root.Props) {
 }
 
 /**
- * Renders a dialog trigger element that forwards received props and marks the element with `data-slot="dialog-trigger"`.
+ * Creates a dialog trigger element that forwards all props to the underlying primitive and sets `data-slot="dialog-trigger"`.
  *
- * @param render - Optional element to render inside the trigger
- * @returns A `DialogPrimitive.Trigger` element with `data-slot="dialog-trigger"` and the forwarded props
+ * @param render - Optional React element to render inside the trigger
+ * @returns The rendered DialogPrimitive.Trigger element
  */
 function DialogTrigger({ render, ...props }: DialogPrimitive.Trigger.Props & { render?: React.ReactElement }) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" render={render} {...props} />
@@ -67,12 +67,12 @@ function DialogOverlay({
 }
 
 /**
- * Renders the dialog's portal-backed popup surface with an overlay, built-in close control, and a scrollable content area.
+ * Render the dialog's portal-backed popup surface including an overlay, built-in close button, and scrollable content area.
  *
  * @param className - Additional classes merged into the popup container's class list
  * @param children - Content rendered inside the dialog's scrollable region
  * @param props - Remaining props forwarded to the underlying popup primitive
- * @returns The rendered dialog popup element
+ * @returns The dialog content element
  */
 function DialogContent({
   className,

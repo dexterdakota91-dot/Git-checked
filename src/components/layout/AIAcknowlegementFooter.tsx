@@ -2,9 +2,9 @@ import React from 'react';
 import { AlertCircle } from 'lucide-react';
 
 /**
- * Renders a footer with an AI disclosure containing an alert icon, an "AI Disclosure" heading, and explanatory text.
+ * Render a styled footer displaying an AI disclosure notice with an icon, heading, and explanatory text.
  *
- * @returns The footer JSX element containing an alert icon, an "AI Disclosure" label, and a brief disclosure paragraph advising independent verification and disclaiming legal, financial, or professional advice.
+ * @returns The footer JSX element containing an alert icon, an "AI Disclosure" label, and a short disclosure paragraph advising independent verification and disclaiming legal, financial, or professional advice.
  */
 export function AIAcknowlegementFooter() {
   return (

@@ -13,11 +13,11 @@ interface VentureDashboardViewProps {
 }
 
 /**
- * Renders an interactive venture dashboard for the given project.
+ * Render the venture dashboard for a selected project.
  *
- * Displays branding (logo, name, mission statement), the project's color palette, target audience and tone,
- * and a venture status card with progress indicators and next steps. Includes controls to navigate back
- * to the main dashboard and to open a preview landing page.
+ * Displays branding (logo, name, mission statement), a color palette, audience and tone details,
+ * and a venture status card with progress indicators and next steps. Includes controls to return
+ * to Mission Control and to open a preview page.
  *
  * @param selectedProject - Project whose branding, agents, and metadata populate the dashboard
  * @param setActiveTab - Callback invoked with the target tab name when navigation is requested

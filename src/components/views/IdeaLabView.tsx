@@ -15,12 +15,12 @@ interface IdeaLabViewProps {
 }
 
 /**
- * Renders the "Venture Architect" Idea Lab UI for generating, viewing, and initiating venture ideas.
+ * Render the "Venture Architect" Idea Lab interface for generating, viewing, and initiating venture ideas.
  *
- * Presents controls to generate new ideas, toggle and initialize refined blueprint templates, display idea and template lists, and initiate a project which switches the active tab to the dashboard.
+ * Presents controls to generate new ideas, toggle and initialize refined blueprint templates, display lists of ideas and templates, and start a project which navigates to the dashboard.
  *
  * @param setActiveTab - Callback to switch the active app tab; invoked with `'dashboard'` after initiating a project
- * @returns The React element for the Idea Lab view
+ * @returns A React element containing the Idea Lab UI
  */
 export default function IdeaLabView({ setActiveTab }: IdeaLabViewProps) {
   const { 

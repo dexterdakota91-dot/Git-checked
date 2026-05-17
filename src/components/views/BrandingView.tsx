@@ -77,11 +77,9 @@ export default function BrandingView({ setActiveTab }: { setActiveTab?: (tab: st
 }
 
 /**
- * Card UI that lets the user choose and verify a venture name before it is saved to the project branding.
+ * Card UI that lets the user choose a venture name via manual input, AI-generated suggestions, or an automated "architect" pick, and verifies availability before saving.
  *
- * Persists the selected name to the venture branding store after verification and advances the onboarding flow via the provided callback.
- *
- * @param onComplete - Callback invoked after the chosen name has been persisted and the naming step is finished
+ * @param onComplete - Callback invoked after a chosen name has been persisted to the venture branding store and the naming step is finished
  * @returns The rendered NamingCard React element
  */
 function NamingCard({ onComplete }: { onComplete: () => void }) {

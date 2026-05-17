@@ -89,10 +89,11 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
 }
 
 /**
- * Render the content panel for a Tabs component.
+ * Renders a Tabs content panel with base layout and typography styles.
  *
- * @param className - Optional additional CSS classes to merge with the component's base styles
- * @returns The tabs content panel element
+ * @param className - Optional additional CSS classes appended to the panel
+ * @param props - All other props are forwarded to the underlying panel component
+ * @returns The rendered tabs content panel element
  */
 function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (

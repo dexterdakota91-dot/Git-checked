@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
 /**
- * Renders the Sheet root element with a default `data-slot="sheet"` attribute.
+ * Top-level Sheet component that renders the sheet root element.
  *
- * @param props - Props applied to the sheet root element
- * @returns The sheet root React element with `data-slot="sheet"` applied
+ * @param props - Props forwarded to the underlying `SheetPrimitive.Root`
+ * @returns The rendered sheet root element with `data-slot="sheet"`
  */
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -38,11 +38,9 @@ function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
 }
 
 /**
- * Renders a portal container for sheet content.
+ * Provides a portal container for sheet contents using the underlying dialog primitive.
  *
- * Forwards all props and exposes the element with `data-slot="sheet-portal"`.
- *
- * @returns The portal element that mounts sheet content into the document
+ * @returns A portal element that mounts sheet content into the document using the dialog primitive.
  */
 function SheetPortal({ ...props }: SheetPrimitive.Portal.Props) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
@@ -69,13 +67,11 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
 }
 
 /**
- * Render the sheet content inside a portal with an overlay and an optional close control.
+ * Render the sheet's content panel inside a portal with an overlay and optional close control.
  *
- * Renders the sheet panel positioned on the specified edge (`side`) and includes a backdrop. When `showCloseButton` is `true`, a close control is rendered inside the panel.
- *
- * @param side - Edge of the viewport from which the sheet appears: `"top"`, `"right"`, `"bottom"`, or `"left"`.
- * @param showCloseButton - Whether to render an inline close button inside the sheet.
- * @returns The rendered sheet content element wrapped in a portal.
+ * @param side - The edge of the viewport from which the sheet appears: `"top"`, `"right"`, `"bottom"`, or `"left"`.
+ * @param showCloseButton - Whether a close button is rendered inside the sheet (defaults to `true`).
+ * @returns The sheet content element (wrapped in a portal) configured with side-based positioning, styles, and an optional close control.
  */
 function SheetContent({
   className,

@@ -69,9 +69,8 @@ function ProgressIndicator({
 }
 
 /**
- * Renders a progress label with default typography and allows overriding classes and props.
+ * Renders a styled progress label element with default typography and forwarded props.
  *
- * @param className - Additional CSS classes to merge with the default `"text-sm font-medium"`.
  * @returns The rendered progress label element.
  */
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
