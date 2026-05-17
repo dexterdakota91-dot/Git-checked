@@ -29,7 +29,7 @@ export const extractJson = (raw: string) => {
 const callAi = async (prompt: string, systemInstruction: string, fallbackData: any) => {
   try {
     if (!process.env.GEMINI_API_KEY) {
-      console.warn("GEMINI_API_KEY missing, using fallback.");
+      if (process.env.NODE_ENV !== "test") console.warn("GEMINI_API_KEY missing, using fallback.");
       return fallbackData;
     }
 
@@ -41,7 +41,7 @@ const callAi = async (prompt: string, systemInstruction: string, fallbackData: a
     const text = response.text || "";
     return text;
   } catch (error) {
-    console.error("AI Service Error:", error);
+    if (process.env.NODE_ENV !== "test") console.error("AI Service Error:", error);
     return fallbackData;
   }
 };
