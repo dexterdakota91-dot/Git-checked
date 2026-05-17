@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { 
   LayoutDashboard, 
@@ -45,6 +45,14 @@ export default function DashboardView({
     selectedProject, 
     setSelectedProject 
   } = useStore();
+
+  const recentLogs = useMemo(() => {
+    return projects
+      .flatMap(p => (p.logs || []).slice(0, 3).map(l => ({ ...l, projectName: p.name, projectId: p.id })))
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 5);
+  }, [projects]);
+
   return (
     <motion.div
       key="dashboard"
@@ -148,7 +156,7 @@ export default function DashboardView({
               <CardContent>
                 <ScrollArea className="h-[200px] pr-4">
                   <div className="space-y-4">
-                    {projects.flatMap(p => (p.logs || []).slice(0, 3).map(l => ({ ...l, projectName: p.name, projectId: p.id }))).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5).map(log => (
+                    {recentLogs.map(log => (
                       <div key={`${log.projectId}-${log.id}`} className="flex gap-3">
                         <div className={cn(
                           "w-1 h-8 rounded-full",

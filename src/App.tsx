@@ -125,6 +125,7 @@ function AetherisApp() {
         <OnboardingDialog 
           completeOnboarding={completeOnboarding}
           setActiveTab={handleSetActiveTab}
+          navigate={navigate}
         />
 
         {/* Branding Confirmation Dialog */}
