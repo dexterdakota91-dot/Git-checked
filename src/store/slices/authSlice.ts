@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
 import { User, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
+import { USState } from '../../constants/mockData';
 import { auth, googleProvider } from '../../lib/firebase';
 import { AppState } from '../useStore';
 
@@ -13,8 +14,18 @@ export interface AuthSlice {
   setLoginError: (error: string | null) => void;
   isLoggingIn: boolean;
   setIsLoggingIn: (isLoggingIn: boolean) => void;
-  userState: string;
-  setUserState: (state: string) => void;
+  /**
+   * The user's selected US state (e.g., "California", "New York").
+   * This represents the regional compliance profile and is used for
+   * tailoring business tips and legal/tax considerations in the application.
+   * An empty string indicates no state has been selected yet.
+   */
+  userState: USState | '';
+  /**
+   * Updates the user's geographic US state.
+   * @param state The US state name or an empty string.
+   */
+  setUserState: (state: USState | '') => void;
 
   // Auth Actions
   handleLogin: () => Promise<void>;
