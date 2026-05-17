@@ -1,5 +1,22 @@
-import { describe, it, expect } from 'vitest';
-import { extractJson } from './gemini';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { extractJson, generateMissionStatements } from './gemini';
+
+// Mock the GoogleGenAI module
+
+export const mockGenerateContent = vi.fn();
+
+vi.mock('@google/genai', () => {
+  return {
+    GoogleGenAI: class {
+      models: any;
+      constructor() {
+        this.models = {
+          generateContent: (...args: any[]) => mockGenerateContent(...args),
+        };
+      }
+    },
+  };
+});
 
 describe('extractJson', () => {
   it('should parse a plain JSON object string', () => {
@@ -45,5 +62,64 @@ describe('extractJson', () => {
   it('should correctly parse json with newlines and white space', () => {
     const raw = "\n      ```json\n      {\n        \"a\": 1,\n        \"b\": \"text\"\n      }\n      ```\n    ";
     expect(extractJson(raw)).toEqual({ a: 1, b: "text" });
+  });
+});
+
+describe('generateMissionStatements', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    vi.resetModules();
+    process.env = { ...originalEnv };
+    mockGenerateContent.mockReset();
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it('should return fallback data when GEMINI_API_KEY is missing', async () => {
+    delete process.env.GEMINI_API_KEY;
+
+    const result = await generateMissionStatements('Test Venture', 'A test description');
+
+    expect(result).toEqual(["Empowering AI-driven growth.", "The future of automated business."]);
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+  });
+
+  it('should call AI service and extract JSON when GEMINI_API_KEY is present', async () => {
+    process.env.GEMINI_API_KEY = 'test-api-key';
+
+    const mockAiResponse = {
+      text: '["Mission 1", "Mission 2", "Mission 3", "Mission 4", "Mission 5"]'
+    };
+    mockGenerateContent.mockResolvedValue(mockAiResponse);
+
+    const result = await generateMissionStatements('Test Venture', 'A test description');
+
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    expect(mockGenerateContent).toHaveBeenCalledWith({
+      model: 'gemini-3-flash-preview',
+      contents: [{
+        role: 'user',
+        parts: [
+          expect.objectContaining({
+            text: expect.stringContaining('Generate 5 sophisticated and unique mission statements')
+          })
+        ]
+      }]
+    });
+    expect(result).toEqual(["Mission 1", "Mission 2", "Mission 3", "Mission 4", "Mission 5"]);
+  });
+
+  it('should return fallback data when AI service throws an error', async () => {
+    process.env.GEMINI_API_KEY = 'test-api-key';
+
+    mockGenerateContent.mockRejectedValue(new Error('AI API Error'));
+
+    const result = await generateMissionStatements('Test Venture', 'A test description');
+
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(["Empowering AI-driven growth.", "The future of automated business."]);
   });
 });
