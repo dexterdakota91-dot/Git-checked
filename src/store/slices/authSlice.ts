@@ -1,9 +1,16 @@
-import { StateCreator } from 'zustand';
-import { User, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
-import { auth, googleProvider } from '../../lib/firebase';
-import { AppState } from '../useStore';
+import { StateCreator } from "zustand";
+import {
+  User,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+} from "firebase/auth";
+import { auth, googleProvider } from "../../lib/firebase";
+import { AppState } from "../useStore";
 
 export interface AuthSlice {
+  userState: string;
+  setUserState: (state: string) => void;
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
   isAuthReady: boolean;
@@ -19,7 +26,11 @@ export interface AuthSlice {
   handleLogout: () => Promise<void>;
 }
 
-export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) => ({
+export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (
+  set,
+) => ({
+  userState: "",
+  setUserState: (state) => set({ userState: state }),
   currentUser: null,
   setCurrentUser: (user) => set({ currentUser: user }),
   isAuthReady: false,
@@ -36,9 +47,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       const popupBlockedCodes = [
-        'auth/popup-blocked',
-        'auth/popup-closed-by-user',
-        'auth/cancelled-popup-request',
+        "auth/popup-blocked",
+        "auth/popup-closed-by-user",
+        "auth/cancelled-popup-request",
       ];
 
       if (popupBlockedCodes.includes(error?.code)) {
@@ -52,16 +63,21 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
           console.error("Login redirect failed", redirectError);
           set({ loginError: "Sign-in failed. Please try again." });
         }
-      } else if (error?.code === 'auth/unauthorized-domain') {
+      } else if (error?.code === "auth/unauthorized-domain") {
         // FIX: Clear error message for the most common deployment issue
-        set({ 
-          loginError: 
-            "This domain is not authorized in Firebase. Go to Firebase Console → Authentication → Settings → Authorized Domains and add your app URL." 
+        set({
+          loginError:
+            "This domain is not authorized in Firebase. Go to Firebase Console → Authentication → Settings → Authorized Domains and add your app URL.",
         });
-        console.error("Unauthorized domain. Add your deployment URL to Firebase Console → Auth → Authorized Domains.", error);
+        console.error(
+          "Unauthorized domain. Add your deployment URL to Firebase Console → Auth → Authorized Domains.",
+          error,
+        );
       } else {
         console.error("Login failed", error);
-        set({ loginError: error?.message || "Sign-in failed. Please try again." });
+        set({
+          loginError: error?.message || "Sign-in failed. Please try again.",
+        });
       }
     } finally {
       set({ isLoggingIn: false });
@@ -71,7 +87,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
   handleLogout: async () => {
     try {
       await signOut(auth);
-      set({ activeTab: 'landing', selectedProject: null, loginError: null });
+      set({ activeTab: "landing", selectedProject: null, loginError: null });
     } catch (error) {
       console.error("Logout failed", error);
     }

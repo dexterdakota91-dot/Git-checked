@@ -1,0 +1,7 @@
+Title: Refactor: Move userState to authSlice
+
+Description:
+- Removed `userState` from `uiSlice` and `bankingSlice` where it was duplicated.
+- Added `userState` and `setUserState` to `authSlice` to properly centralize the geographic state of the user.
+- Updated interfaces and store initialization.
+- Ensured all tests and type checks pass.
