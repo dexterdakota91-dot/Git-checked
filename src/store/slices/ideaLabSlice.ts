@@ -45,13 +45,12 @@ export const createIdeaLabSlice: StateCreator<AppState, [], [], IdeaLabSlice> = 
     const { userState } = get();
     set({ isTemplatesGenerating: true });
     try {
-      const newTemplates: BusinessIdea[] = [];
-      for (let i = 0; i < count; i++) {
-        const template = await generateRefinedTemplate(userState);
-        if (template) {
-          newTemplates.push({ ...template, id: `blueprint-${Date.now()}-${i}` });
-        }
-      }
+      const templatePromises = Array.from({ length: count }, () => generateRefinedTemplate(userState));
+      const templates = await Promise.all(templatePromises);
+
+      const newTemplates: BusinessIdea[] = templates
+        .map((template, i) => template ? { ...template, id: `blueprint-${Date.now()}-${i}` } : null)
+        .filter((template): template is BusinessIdea => template !== null);
       set(state => ({
         refinedTemplates: [...newTemplates, ...state.refinedTemplates]
       }));
