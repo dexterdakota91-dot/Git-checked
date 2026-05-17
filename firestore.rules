@@ -116,10 +116,7 @@ service cloud.firestore {
     match /projects/{projectId} {
       allow read: if (resource.data.isAutonomous == true) || isDocOwner() || isAdmin();
       allow create: if isAuthenticated() && isValidProject(request.resource.data) && uidUnchanged();
-      allow update: if (isDocOwner() || isAdmin()) || 
-                      (resource.data.isAutonomous == true && 
-                       !isAuthenticated() && 
-                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tasks', 'agents', 'logs', 'status']));
+      allow update: if isDocOwner() || isAdmin();
       allow delete: if isDocOwner() || isAdmin();
     }
   }
