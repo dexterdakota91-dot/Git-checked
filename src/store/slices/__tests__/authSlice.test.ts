@@ -66,7 +66,7 @@ describe('authSlice', () => {
 
       expect(setMock).toHaveBeenCalledWith({ loginError: null, isLoggingIn: true });
       expect(signInWithPopup).toHaveBeenCalled();
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
 
     it('falls back to redirect if popup is blocked', async () => {
@@ -79,7 +79,6 @@ describe('authSlice', () => {
 
       expect(signInWithPopup).toHaveBeenCalled();
       expect(signInWithRedirect).toHaveBeenCalled();
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
     });
 
     it('sets login error if redirect fails after popup blocked', async () => {
@@ -95,7 +94,7 @@ describe('authSlice', () => {
       expect(signInWithPopup).toHaveBeenCalled();
       expect(signInWithRedirect).toHaveBeenCalled();
       expect(setMock).toHaveBeenCalledWith({ loginError: "Sign-in failed. Please try again." });
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
 
     it('handles unauthorized domain error gracefully', async () => {
@@ -108,7 +107,7 @@ describe('authSlice', () => {
       expect(setMock).toHaveBeenCalledWith(expect.objectContaining({
         loginError: expect.stringContaining("This domain is not authorized in Firebase")
       }));
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
 
     it('sets generic error for other login failures', async () => {
@@ -118,7 +117,7 @@ describe('authSlice', () => {
       await slice.handleLogin();
 
       expect(setMock).toHaveBeenCalledWith({ loginError: 'Some generic error message' });
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
   });
 

@@ -73,6 +73,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
       } else if (error?.code === 'auth/unauthorized-domain') {
         // FIX: Clear error message for the most common deployment issue
         console.error("Unauthorized domain. Add your deployment URL to Firebase Console → Auth → Authorized Domains.", error);
+        set({ loginError: "This domain is not authorized in Firebase Console" });
       } else {
         console.error("Login failed", error);
         set({ loginError: error?.message || "Sign-in failed. Please try again." });
