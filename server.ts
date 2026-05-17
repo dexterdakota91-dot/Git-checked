@@ -18,7 +18,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)
-const firebaseConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "firebase-applet-config.json"), "utf8"));
+const firebaseConfig = {
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID,
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  firestoreDatabaseId: process.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
+};
 const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 
