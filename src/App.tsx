@@ -47,7 +47,6 @@ function AetherisApp() {
   // Initialize Global Firebase Listeners
   useFirebaseListeners();
 
-  // FIX: useNavigate must be inside BrowserRouter — moved here from AppShell wrapper
   const navigate = useNavigate();
 
   const { 
@@ -58,7 +57,6 @@ function AetherisApp() {
     completeOnboarding,
   } = useStore();
 
-  // FIX: Provide actual navigation to OnboardingDialog instead of noop
   const handleSetActiveTab = React.useCallback((tab: string) => {
     navigate(`/${tab}`);
   }, [navigate]);
@@ -124,7 +122,6 @@ function AetherisApp() {
       <DynamicThemeProvider>
         <AppShell />
 
-        {/* FIX: Pass real navigation function to OnboardingDialog */}
         <OnboardingDialog 
           completeOnboarding={completeOnboarding}
           setActiveTab={handleSetActiveTab}
