@@ -14,12 +14,14 @@ import { ElectricityTracer } from './ElectricityTracer';
 import { US_STATES } from '../constants/mockData';
 import { cn } from '@/lib/utils';
 import { useStore } from '../store/useStore';
+import { NavigateFunction } from 'react-router-dom';
 
 import { AetherisLogo } from './logos/LogoComponents';
 
 interface OnboardingDialogProps {
   completeOnboarding: () => void;
   setActiveTab: (tab: string) => void;
+  navigate: NavigateFunction;
 }
 
 /**
@@ -33,7 +35,8 @@ interface OnboardingDialogProps {
  */
 export function OnboardingDialog({
   completeOnboarding,
-  setActiveTab
+  setActiveTab,
+  navigate
 }: OnboardingDialogProps) {
   const { 
     showOnboarding, setShowOnboarding,
