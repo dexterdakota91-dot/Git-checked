@@ -3,7 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc, query, collection, where, onSnapshot } from 'firebase/firestore';
 import { auth, db, OperationType, handleFirestoreError, getRedirectResult } from '../lib/firebase';
 import { useStore } from '../store/useStore';
-import { USState } from '../constants/mockData';
+import { US_STATES, USState } from '../constants/mockData';
 import { Project } from '../types';
 
 /**
@@ -59,7 +59,13 @@ export function useFirebaseListeners() {
           if (!userDoc.exists()) {
             setShowOnboarding(true);
           } else {
-            setUserState((userDoc.data().state as USState) || '');
+            const data = userDoc.data();
+            const userState = (data.state as USState) || '';
+            setUserState(userState);
+
+            if (!userState || !US_STATES.includes(userState as any)) {
+              setShowOnboarding(true);
+            }
           }
         }).catch(error => {
           console.error("Error fetching user profile:", error);
