@@ -34,7 +34,7 @@ const callAi = async (prompt: string, systemInstruction: string, fallbackData: a
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: `${systemInstruction}\n\n${prompt}` }] }]
     });
 
