@@ -14,15 +14,15 @@ vi.mock('../../../lib/firebase', () => ({
 }));
 
 // We need updateDoc and other firestore methods mocked properly
-const mockUpdateDoc = vi.fn();
-const mockDeleteDoc = vi.fn();
-const mockAddDoc = vi.fn(() => Promise.resolve({ id: 'new-project-id' }));
+const mockUpdateDoc: any = vi.fn();
+const mockDeleteDoc: any = vi.fn();
+const mockAddDoc: any = vi.fn(() => Promise.resolve({ id: 'new-project-id' }));
 
 vi.mock('firebase/firestore', () => ({
   doc: vi.fn(() => ({ id: 'mock-doc-ref' })),
-  updateDoc: (...args: any[]) => mockUpdateDoc.apply(null, args),
-  deleteDoc: (...args: any[]) => mockDeleteDoc.apply(null, args),
-  addDoc: (...args: any[]) => mockAddDoc.apply(null, args),
+  updateDoc: vi.fn((...args: any[]) => mockUpdateDoc.apply(null, args)),
+  deleteDoc: vi.fn((...args: any[]) => mockDeleteDoc.apply(null, args)),
+  addDoc: vi.fn((...args: any[]) => mockAddDoc.apply(null, args)),
   collection: vi.fn(() => ({ id: 'mock-collection-ref' })),
 }));
 
@@ -60,7 +60,7 @@ describe('projectSlice', () => {
   });
 
   it('should initialize with default state', () => {
-    const state = useTestStore.getState();
+    const state: any = useTestStore.getState();
     expect(state.projects).toEqual([]);
     expect(state.selectedProject).toBeNull();
   });
@@ -87,7 +87,7 @@ describe('projectSlice', () => {
 
       await useTestStore.getState().toggleAutonomy('1');
 
-      const state = useTestStore.getState();
+      const state: any = useTestStore.getState();
       expect(state.projects[0].isAutonomous).toBe(true);
       expect(state.selectedProject.isAutonomous).toBe(true);
       expect(mockUpdateDoc).toHaveBeenCalled();
@@ -111,7 +111,7 @@ describe('projectSlice', () => {
 
       await useTestStore.getState().updateAgent('1', 'agent-1', { status: 'working' });
 
-      const state = useTestStore.getState();
+      const state: any = useTestStore.getState();
       expect(state.projects[0].agents[0].status).toBe('working');
       expect(state.selectedProject.agents[0].status).toBe('working');
       expect(mockUpdateDoc).toHaveBeenCalled();
@@ -259,7 +259,7 @@ describe('projectSlice', () => {
       expect(updateCall[1].branding.colors.primary).toBe('#fff');
       expect(updateCall[1].branding.logo).toBe('logo.png');
 
-      const state = useTestStore.getState();
+      const state: any = useTestStore.getState();
       expect(state.selectedProject.branding.colors.primary).toBe('#fff');
       expect(state.selectedProject.branding.logo).toBe('logo.png');
     });

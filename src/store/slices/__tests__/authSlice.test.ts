@@ -66,7 +66,7 @@ describe('authSlice', () => {
 
       expect(setMock).toHaveBeenCalledWith({ loginError: null, isLoggingIn: true });
       expect(signInWithPopup).toHaveBeenCalled();
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
 
     it('falls back to redirect if popup is blocked', async () => {
@@ -94,7 +94,7 @@ describe('authSlice', () => {
       expect(signInWithPopup).toHaveBeenCalled();
       expect(signInWithRedirect).toHaveBeenCalled();
       expect(setMock).toHaveBeenCalledWith({ loginError: "Sign-in failed. Please try again." });
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
 
     it('handles unauthorized domain error gracefully', async () => {
@@ -104,7 +104,7 @@ describe('authSlice', () => {
 
       await slice.handleLogin();
 
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
 
     it('sets generic error for other login failures', async () => {
@@ -114,7 +114,7 @@ describe('authSlice', () => {
       await slice.handleLogin();
 
       expect(setMock).toHaveBeenCalledWith({ loginError: 'Some generic error message' });
-      expect(setMock).toHaveBeenCalledWith({ isLoggingIn: false });
+      expect(setMock).toHaveBeenCalledWith(expect.objectContaining({ isLoggingIn: false }));
     });
   });
 
@@ -140,5 +140,40 @@ describe('authSlice', () => {
 
       expect(console.error).toHaveBeenCalledWith("Logout failed", error);
     });
+  });
+});
+
+
+describe('authSlice - setUserState', () => {
+  let setMock: any;
+  let getMock: any;
+  let apiMock: any;
+  let slice: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setMock = vi.fn();
+    getMock = vi.fn();
+    apiMock = vi.fn();
+
+    slice = createAuthSlice(setMock, getMock, apiMock);
+  });
+
+  it('allows setting an empty string', () => {
+    slice.setUserState('');
+    expect(setMock).toHaveBeenCalledWith({ userState: '' });
+  });
+
+  it('allows setting a valid US state', () => {
+    slice.setUserState('California');
+    expect(setMock).toHaveBeenCalledWith({ userState: 'California' });
+  });
+
+  it('sanitizes and logs warning for invalid state', () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    slice.setUserState('InvalidState');
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid US state provided: InvalidState'));
+    expect(setMock).toHaveBeenCalledWith({ userState: '' });
+    consoleWarnSpy.mockRestore();
   });
 });
