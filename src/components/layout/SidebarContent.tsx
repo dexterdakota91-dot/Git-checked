@@ -199,7 +199,6 @@ export function SidebarContent({
               <DeleteVentureButton
                 projectId={p.id}
                 onDelete={(id, e) => {
-                  console.log("Delete button clicked for project:", id);
                   deleteProject(id, e);
                 }}
                 iconOnly={true}
