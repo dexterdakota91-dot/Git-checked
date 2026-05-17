@@ -29,6 +29,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
 
   handleLogin: async () => {
     set({ loginError: null, isLoggingIn: true });
+    let isRedirecting = false;
     try {
       // Primary: try popup (works on most browsers/localhost)
       await signInWithPopup(auth, googleProvider);
@@ -43,10 +44,12 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
         // FIX: Fallback to redirect for environments that block popups
         // (Vercel previews, some mobile browsers, strict browser settings)
         try {
+          isRedirecting = true;
           await signInWithRedirect(auth, googleProvider);
           // signInWithRedirect navigates away; result is handled in useFirebaseListeners
           return;
         } catch (redirectError: any) {
+          isRedirecting = false;
           console.error("Login redirect failed", redirectError);
           set({ loginError: "Sign-in failed. Please try again." });
         }
@@ -62,7 +65,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
         set({ loginError: error?.message || "Sign-in failed. Please try again." });
       }
     } finally {
-      set({ isLoggingIn: false });
+      if (!isRedirecting) {
+        set({ isLoggingIn: false });
+      }
     }
   },
 
