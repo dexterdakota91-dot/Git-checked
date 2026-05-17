@@ -144,4 +144,24 @@ describe('authSlice', () => {
       expect(console.error).toHaveBeenCalledWith("Logout failed", error);
     });
   });
+  describe('setUserState', () => {
+    it('allows setting an empty string', () => {
+      slice.setUserState('');
+      expect(setMock).toHaveBeenCalledWith({ userState: '' });
+    });
+
+    it('allows setting a valid US state', () => {
+      slice.setUserState('California');
+      expect(setMock).toHaveBeenCalledWith({ userState: 'California' });
+    });
+
+    it('sanitizes and logs warning for invalid state', () => {
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      slice.setUserState('InvalidState');
+      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid US state provided: InvalidState'));
+      expect(setMock).toHaveBeenCalledWith({ userState: '' });
+      consoleWarnSpy.mockRestore();
+    });
+  });
+
 });
