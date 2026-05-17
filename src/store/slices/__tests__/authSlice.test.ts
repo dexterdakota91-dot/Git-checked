@@ -13,19 +13,21 @@ vi.mock('../../../lib/firebase', () => ({
   googleProvider: {},
 }));
 
+let setMock: any;
+let getMock: any;
+let apiMock: any;
+let slice: any;
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  setMock = vi.fn();
+  getMock = vi.fn();
+  apiMock = vi.fn();
+  slice = createAuthSlice(setMock, getMock, apiMock);
+});
+
 describe('authSlice', () => {
-  let setMock: any;
-  let getMock: any;
-  let apiMock: any;
-  let slice: any;
-
   beforeEach(() => {
-    vi.clearAllMocks();
-    setMock = vi.fn();
-    getMock = vi.fn();
-    apiMock = vi.fn();
-    slice = createAuthSlice(setMock, getMock, apiMock);
-
     // Suppress console.error in tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -148,20 +150,6 @@ describe('authSlice', () => {
 
 
 describe('authSlice - setUserState', () => {
-  let setMock: any;
-  let getMock: any;
-  let apiMock: any;
-  let slice: any;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    setMock = vi.fn();
-    getMock = vi.fn();
-    apiMock = vi.fn();
-
-    slice = createAuthSlice(setMock, getMock, apiMock);
-  });
-
   it('allows setting an empty string', () => {
     slice.setUserState('');
     expect(setMock).toHaveBeenCalledWith({ userState: '' });
