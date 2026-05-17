@@ -11,75 +11,56 @@ import { Project } from '../types';
  * Registers an authentication state listener that updates `currentUser` and `isAuthReady`, fetches the user's profile to decide whether to show onboarding or restore stored user state, and registers a real-time listener for the current user's `projects` collection (sorted by `createdAt`) after auth is ready. Also attempts to complete any pending redirect sign-in when the hook mounts and surfaces relevant login errors via the store. Listeners are detached on cleanup.
  */
 export function useFirebaseListeners() {
-  const { 
-    setCurrentUser, 
-    setIsAuthReady, 
-    setShowOnboarding, 
-    setUserState, 
-    setProjects,
-    setLoginError,
-    currentUser,
-    isAuthReady
-  } = useStore();
+  const store = useStore();
 
-  // FIX: Handle redirect sign-in result on app startup.
-  // When signInWithRedirect is used (popup blocked), Firebase redirects back
-  // to the app. getRedirectResult() must be called to complete the sign-in.
   useEffect(() => {
+    // FIX: Handle redirect sign-in result on app startup.
+    // This is required for browsers that block popups (e.g., Safari, mobile browsers, Vercel previews).
     getRedirectResult(auth)
       .then((result) => {
         if (result?.user) {
-          // Redirect sign-in succeeded — onAuthStateChanged below will fire automatically
-          console.log("Redirect sign-in successful:", result.user.email);
+          console.log("Successfully signed in via redirect:", result.user.uid);
+          // We don't need to manually update state here because the onAuthStateChanged listener
+          // will automatically catch the state change and update the store.
         }
-      })
-      .catch((error: any) => {
-        if (error?.code === 'auth/unauthorized-domain') {
-          setLoginError(
-            "This domain is not authorized in Firebase. Add your app URL to Firebase Console → Authentication → Settings → Authorized Domains."
-          );
-        } else if (error?.code !== 'auth/no-current-user') {
-          console.error("Redirect sign-in error:", error);
-          setLoginError(error?.message || "Sign-in failed. Please try again.");
-        }
+      }).catch((error) => {
+        console.error("Error during redirect sign-in handling:", error);
+        useStore.setState({ loginError: error.message || "Redirect sign-in failed." });
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount only
 
-  // Auth Listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setIsAuthReady(true);
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      store.setCurrentUser(firebaseUser);
+      store.setIsAuthReady(true);
       
-      if (user) {
+      if (firebaseUser) {
         // Fetch user profile in background
-        getDoc(doc(db, 'users', user.uid)).then(userDoc => {
+        getDoc(doc(db, 'users', firebaseUser.uid)).then(userDoc => {
           if (!userDoc.exists()) {
-            setShowOnboarding(true);
+            store.setShowOnboarding(true);
           } else {
-            setUserState(userDoc.data().state || '');
+            store.setUserState(userDoc.data().state || '');
           }
         }).catch(error => {
           console.error("Error fetching user profile:", error);
         });
       }
     });
-    return () => unsubscribe();
-  }, [setCurrentUser, setIsAuthReady, setShowOnboarding, setUserState]);
+
+    return () => unsubscribeAuth();
+  }, [store]);
 
   // Firestore Projects Listener
   useEffect(() => {
-    if (!isAuthReady) return;
+    if (!store.isAuthReady) return;
     
-    if (!currentUser) {
-      setProjects([]);
+    if (!store.currentUser) {
+      store.setProjects([]);
       return;
     }
 
     const q = query(
       collection(db, 'projects'),
-      where('uid', '==', currentUser.uid)
+      where('uid', '==', store.currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(
@@ -97,7 +78,7 @@ export function useFirebaseListeners() {
             new Date(a.createdAt || 0).getTime()
         );
 
-        setProjects(projectsData);
+        store.setProjects(projectsData);
       },
       (error) => {
         handleFirestoreError(error, OperationType.LIST, 'projects');
@@ -105,5 +86,5 @@ export function useFirebaseListeners() {
     );
 
     return () => unsubscribe();
-  }, [currentUser, isAuthReady, setProjects]);
+  }, [store.currentUser, store.isAuthReady, store.setProjects]);
 }
