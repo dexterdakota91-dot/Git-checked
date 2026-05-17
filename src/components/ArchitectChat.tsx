@@ -9,9 +9,9 @@ import { useStore } from '../store/useStore';
 import { suggestTasks, generateBranding } from '../services/gemini';
 
 /**
- * Render a floating Architect chat UI that displays message history, an input bar, project progress, and an autonomy toggle; when autonomy is enabled, model messages containing `[ACTION:TYPE:DATA]` directives are parsed and executed.
+ * Render the floating "Architect Live" chat panel that displays message history, an input bar, project progress, and an autonomy toggle tied to app state.
  *
- * The component auto-scrolls to the latest message, shows actionable strategy cards for model messages (with a manual "Execute Strategy" button when autonomy is off), and invokes project-related side effects (e.g., updating mission/branding, generating roadmaps, creating agents, completing tasks, adding logs) in response to parsed actions.
+ * When a selected project has autonomy enabled, model messages containing `[ACTION:TYPE:DATA]` directives are parsed and dispatched to perform project-related side effects (for example: updating mission/branding, generating roadmaps, creating agents, completing tasks, or adding logs).
  *
  * @returns The chat component's JSX element
  */

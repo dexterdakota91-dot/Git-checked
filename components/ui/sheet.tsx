@@ -8,20 +8,20 @@ import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
 /**
- * Top-level Sheet component that renders the sheet root element.
+ * Renders the Sheet root element with a default `data-slot="sheet"` attribute.
  *
- * @param props - Props forwarded to the underlying `SheetPrimitive.Root`
- * @returns The rendered sheet root element with `data-slot="sheet"`
+ * @param props - Props applied to the sheet root element
+ * @returns The sheet root React element with `data-slot="sheet"` applied
  */
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
 /**
- * Wraps the dialog primitive's Trigger, forwarding props and optionally rendering a custom element as the trigger.
+ * Renders a Sheet trigger that forwards props to the underlying dialog primitive.
  *
- * @param render - Optional React element to use as the trigger's rendered element
- * @returns The trigger element that opens or toggles the sheet
+ * @param render - Optional custom React element to use as the trigger's render output
+ * @returns A trigger element that opens or toggles the Sheet
  */
 function SheetTrigger({ render, ...props }: SheetPrimitive.Trigger.Props & { render?: React.ReactElement }) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" render={render} {...props} />
@@ -38,9 +38,11 @@ function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
 }
 
 /**
- * Provides a portal container for sheet contents using the underlying dialog primitive.
+ * Renders a portal container for sheet content.
  *
- * @returns A portal element that mounts sheet content into the document using the dialog primitive.
+ * Forwards all props and exposes the element with `data-slot="sheet-portal"`.
+ *
+ * @returns The portal element that mounts sheet content into the document
  */
 function SheetPortal({ ...props }: SheetPrimitive.Portal.Props) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
@@ -67,11 +69,13 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
 }
 
 /**
- * Renders the sheet content panel inside a portal with an overlay and an optional close control.
+ * Render the sheet content inside a portal with an overlay and an optional close control.
  *
- * @param side - The viewport edge from which the sheet appears: "top", "right", "bottom", or "left".
- * @param showCloseButton - Whether to render a close button inside the sheet (defaults to `true`).
- * @returns The sheet content element wrapped in a portal.
+ * Renders the sheet panel positioned on the specified edge (`side`) and includes a backdrop. When `showCloseButton` is `true`, a close control is rendered inside the panel.
+ *
+ * @param side - Edge of the viewport from which the sheet appears: `"top"`, `"right"`, `"bottom"`, or `"left"`.
+ * @param showCloseButton - Whether to render an inline close button inside the sheet.
+ * @returns The rendered sheet content element wrapped in a portal.
  */
 function SheetContent({
   className,
@@ -118,9 +122,12 @@ function SheetContent({
 }
 
 /**
- * Renders a div wrapper for sheet header content with header-specific layout classes.
+ * Layout wrapper for sheet header content.
  *
- * @returns The header wrapper `div` with default classes `flex flex-col gap-0.5 p-4` merged with any provided `className`
+ * Merges default header layout classes with any provided `className` and forwards other `div` props.
+ *
+ * @param className - Additional class names appended to the default `"flex flex-col gap-0.5 p-4"`
+ * @returns A `div` element that wraps header content with header-specific layout classes
  */
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -133,10 +140,11 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 /**
- * Container for sheet footer content with default layout and spacing.
+ * Layout wrapper for sheet footer content.
  *
- * @param className - Additional CSS classes to merge with the default footer classes
- * @returns A `div` element used as the sheet's footer container
+ * Renders a div that serves as the sheet's footer container with default spacing and layout classes; any provided `className` is merged with the defaults.
+ *
+ * @returns The footer container element rendered as a `div`.
  */
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (

@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { LogIn, Sparkles, ShieldCheck, Zap, AlertCircle, Loader2 } from 'lucide-react';
 
 /**
- * Render the full-screen, centered login interface with branding, animated background effects, a Google sign-in button (with loading/disabled state), conditional error alert, feature badges, and a system-status footer.
+ * Renders the full-screen, centered login interface with branding, animated ambient backgrounds, a Google sign-in button that supports a loading/disabled state, a conditional error alert, feature badges, and a system-status footer.
  *
- * @returns A JSX element that renders the complete login view.
+ * @returns The login view as a JSX element
  */
 export function LoginView() {
   const { handleLogin, loginError, isLoggingIn } = useStore();

@@ -6,9 +6,9 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { X } from "lucide-react"
 
 /**
- * Render the dialog root element with a data-slot of "dialog" and forward all received props.
+ * Renders the dialog root element with a `data-slot="dialog"` attribute and forwards all props.
  *
- * @param props - Props forwarded to the dialog root element
+ * @param props - Props to pass through to the dialog root element
  * @returns The rendered dialog root element
  */
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -16,10 +16,10 @@ function Dialog({ ...props }: DialogPrimitive.Root.Props) {
 }
 
 /**
- * Creates a dialog trigger element that forwards all props to the underlying primitive and sets `data-slot="dialog-trigger"`.
+ * Renders a dialog trigger element that forwards received props and marks the element with `data-slot="dialog-trigger"`.
  *
- * @param render - Optional React element to render inside the trigger
- * @returns The rendered DialogPrimitive.Trigger element
+ * @param render - Optional element to render inside the trigger
+ * @returns A `DialogPrimitive.Trigger` element with `data-slot="dialog-trigger"` and the forwarded props
  */
 function DialogTrigger({ render, ...props }: DialogPrimitive.Trigger.Props & { render?: React.ReactElement }) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" render={render} {...props} />
@@ -67,12 +67,12 @@ function DialogOverlay({
 }
 
 /**
- * Renders the dialog popup and overlay with a built-in close button and a scrollable content area.
+ * Renders the dialog's portal-backed popup surface with an overlay, built-in close control, and a scrollable content area.
  *
  * @param className - Additional classes merged into the popup container's class list
  * @param children - Content rendered inside the dialog's scrollable region
  * @param props - Remaining props forwarded to the underlying popup primitive
- * @returns The rendered dialog content element
+ * @returns The rendered dialog popup element
  */
 function DialogContent({
   className,
@@ -160,9 +160,9 @@ function DialogFooter({
 }
 
 /**
- * Renders a dialog title with the library's heading typography classes applied.
+ * Render a dialog title element with the library's heading typography styles applied.
  *
- * @returns The dialog title element with the provided `className` merged into the default heading classes.
+ * @returns A React element representing the dialog title with heading typography classes merged with any provided `className`.
  */
 function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (

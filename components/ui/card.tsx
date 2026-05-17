@@ -40,9 +40,9 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 /**
- * Renders the card title container with preset typography and accepts additional `className` and other div props.
+ * Renders a title container for a card with preset heading typography.
  *
- * @returns A `div` element with `data-slot="card-title"` whose class list combines the component's typography styles and any supplied `className`
+ * @returns A `div` element with `data-slot="card-title"` whose class list includes the component's heading typography and the provided `className`
  */
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -74,9 +74,9 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 /**
- * Card action area positioned in the card's top-right corner.
+ * Renders the card action container positioned at the top-right of the card.
  *
- * @returns A `div` element with `data-slot="card-action"` positioned in the top-right of the card; merges the provided `className` with layout classes and forwards other `div` props.
+ * @returns A `div` element with `data-slot="card-action"` and grid layout classes that place it in the top-right; accepts standard `div` props and `className` overrides.
  */
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -92,9 +92,9 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 /**
- * Card content container used to hold the main content of a card.
+ * Renders the card content container.
  *
- * @returns The content `div` element with `data-slot="card-content"`.
+ * @returns The `div` element used as the card content area (`data-slot="card-content"`)
  */
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (

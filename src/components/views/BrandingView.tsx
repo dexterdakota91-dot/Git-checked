@@ -17,12 +17,12 @@ import { db } from '../../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 /**
- * Render the Venture Onboarding wizard for the current project, walking through naming, visual identity, mission, logo, voice/tone, and a final summary.
+ * Renders the Venture Onboarding wizard for the current project, guiding users through naming, visual identity, mission, logo, voice/tone, and a final summary.
  *
- * If no project is selected, renders a centered "No venture selected." message.
+ * If no project is selected, displays a centered "No venture selected." message.
  *
- * @param setActiveTab - Optional callback invoked with a tab identifier (for example `'dashboard'`) when the summary step requests navigation.
- * @returns The onboarding wizard UI for the selected project, including step headers and the active step card.
+ * @param setActiveTab - Optional callback invoked with a tab identifier (e.g., `'dashboard'`) when the summary step requests navigation.
+ * @returns The onboarding wizard UI for the selected project, showing step headers and the active step card.
  */
 export default function BrandingView({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const { 
@@ -77,9 +77,11 @@ export default function BrandingView({ setActiveTab }: { setActiveTab?: (tab: st
 }
 
 /**
- * Card UI that lets the user choose a venture name via manual input, AI-generated suggestions, or an automated "architect" pick, and verifies availability before saving.
+ * Card UI that lets the user choose and verify a venture name before it is saved to the project branding.
  *
- * @param onComplete - Callback invoked after a chosen name has been persisted to the venture branding store and the naming step is finished
+ * Persists the selected name to the venture branding store after verification and advances the onboarding flow via the provided callback.
+ *
+ * @param onComplete - Callback invoked after the chosen name has been persisted and the naming step is finished
  * @returns The rendered NamingCard React element
  */
 function NamingCard({ onComplete }: { onComplete: () => void }) {
