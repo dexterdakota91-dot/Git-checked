@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useNavigate } from 'react-router-dom';
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -19,6 +19,11 @@ import { useStore } from './store/useStore';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from './lib/firebase';
 
+/**
+ * Renders the top-level application, providing global error handling, routing, and analytics.
+ *
+ * @returns The root JSX element: an ErrorBoundary that contains BrowserRouter and `AetherisApp`, followed by `Analytics` and `SpeedInsights` components.
+ */
 export default function App() {
   return (
     <>
@@ -33,9 +38,17 @@ export default function App() {
   );
 }
 
+/**
+ * Root application component that initializes global listeners, routing, Plaid setup, and renders the main app UI.
+ *
+ * @returns The rendered application tree (JSX) containing the theme provider, app shell, onboarding dialog (with real navigation), and the branding confirmation dialog.
+ */
 function AetherisApp() {
   // Initialize Global Firebase Listeners
   useFirebaseListeners();
+
+  // FIX: useNavigate must be inside BrowserRouter — moved here from AppShell wrapper
+  const navigate = useNavigate();
 
   const { 
     isBrandingConfirmOpen, setIsBrandingConfirmOpen,
@@ -43,8 +56,12 @@ function AetherisApp() {
     selectedProject, setSelectedProject,
     setPlaidToken, setPlaidError,
     completeOnboarding,
-    activeTab
   } = useStore();
+
+  // FIX: Provide actual navigation to OnboardingDialog instead of noop
+  const handleSetActiveTab = React.useCallback((tab: string) => {
+    navigate(`/${tab}`);
+  }, [navigate]);
 
   // Plaid Integration Token Fetcher
   useEffect(() => {
@@ -107,10 +124,10 @@ function AetherisApp() {
       <DynamicThemeProvider>
         <AppShell />
 
-        {/* Onboarding Dialog */}
+        {/* FIX: Pass real navigation function to OnboardingDialog */}
         <OnboardingDialog 
           completeOnboarding={completeOnboarding}
-          setActiveTab={() => {}}
+          setActiveTab={handleSetActiveTab}
         />
 
         {/* Branding Confirmation Dialog */}
