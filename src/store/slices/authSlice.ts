@@ -13,6 +13,8 @@ export interface AuthSlice {
   setLoginError: (error: string | null) => void;
   isLoggingIn: boolean;
   setIsLoggingIn: (isLoggingIn: boolean) => void;
+  userState: string;
+  setUserState: (state: string) => void;
 
   // Auth Actions
   handleLogin: () => Promise<void>;
@@ -28,6 +30,8 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
   setLoginError: (error) => set({ loginError: error }),
   isLoggingIn: false,
   setIsLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
+  userState: '',
+  setUserState: (state) => set({ userState: state }),
 
   handleLogin: async () => {
     set({ loginError: null, isLoggingIn: true });
@@ -54,10 +58,6 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
         }
       } else if (error?.code === 'auth/unauthorized-domain') {
         // FIX: Clear error message for the most common deployment issue
-        set({ 
-          loginError: 
-            "This domain is not authorized in Firebase. Go to Firebase Console → Authentication → Settings → Authorized Domains and add your app URL." 
-        });
         console.error("Unauthorized domain. Add your deployment URL to Firebase Console → Auth → Authorized Domains.", error);
       } else {
         console.error("Login failed", error);
