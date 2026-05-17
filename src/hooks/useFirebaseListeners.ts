@@ -30,7 +30,7 @@ export function useFirebaseListeners() {
       .then((result) => {
         if (result?.user) {
           // Redirect sign-in succeeded — onAuthStateChanged below will fire automatically
-          console.log("Redirect sign-in successful:", result.user.email);
+
         }
       })
       .catch((error: any) => {
