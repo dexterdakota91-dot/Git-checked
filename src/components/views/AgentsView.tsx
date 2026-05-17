@@ -8,6 +8,15 @@ interface AgentsViewProps {
   selectedProject?: Project | null;
 }
 
+/**
+ * Render the Agents section for an optional selected project.
+ *
+ * If `selectedProject` exists and has agents, renders an AgentCard for each agent in a responsive grid;
+ * otherwise renders a centered empty-state message.
+ *
+ * @param selectedProject - The project whose agents should be displayed; may be `undefined` or `null`.
+ * @returns A React element containing the agents grid or an empty-state message.
+ */
 export default function AgentsView({ selectedProject }: AgentsViewProps) {
   const { projects, setProjects } = useStore();
 

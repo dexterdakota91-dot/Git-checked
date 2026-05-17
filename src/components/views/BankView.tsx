@@ -6,6 +6,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { useStore } from '../../store/useStore';
 import { usePlaidLink, PlaidLinkOptions, PlaidLinkOnSuccess } from 'react-plaid-link';
 
+/**
+ * Render the Bank & Tax Setup page with Plaid integration and optional state-specific business tips.
+ *
+ * Renders a Plaid connection card that shows configuration errors, linked-account state, or a "Connect with Plaid" button. When Plaid returns success the component marks the account as linked in the shared store. If `userState` is present, renders a card with state-specific business tips and a disclaimer.
+ *
+ * @returns The React element containing the bank linking UI and optional state-specific tips.
+ */
 export default function BankView() {
   const { plaidError, isBankLinked, setIsBankLinked, plaidToken, userState } = useStore();
 

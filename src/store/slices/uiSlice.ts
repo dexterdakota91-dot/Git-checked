@@ -12,6 +12,10 @@ export interface UISlice {
   setIsUserSettingsOpen: (isOpen: boolean) => void;
   isResetConfirmOpen: boolean;
   setIsResetConfirmOpen: (isOpen: boolean) => void;
+  // FIX: userState was referenced across the app (ideaLabSlice, OnboardingDialog,
+  // useFirebaseListeners, completeOnboarding) but never defined in any slice.
+  userState: string;
+  setUserState: (state: string) => void;
 }
 
 export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set) => ({
@@ -25,4 +29,6 @@ export const createUISlice: StateCreator<AppState, [], [], UISlice> = (set) => (
   setIsUserSettingsOpen: (isOpen) => set({ isUserSettingsOpen: isOpen }),
   isResetConfirmOpen: false,
   setIsResetConfirmOpen: (isOpen) => set({ isResetConfirmOpen: isOpen }),
+  userState: '',
+  setUserState: (state) => set({ userState: state }),
 });

@@ -1,6 +1,24 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, getDocFromServer } from 'firebase/firestore';
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged, 
+  User 
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  getDocFromServer 
+} from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -8,7 +26,14 @@ export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const googleProvider = new GoogleAuthProvider();
 
-// Connection test
+// FIX: Export getRedirectResult so useFirebaseListeners can handle redirect sign-ins
+export { getRedirectResult };
+
+/**
+ * Verifies Firestore connectivity by attempting to read a known test document.
+ *
+ * If the client is offline (error message includes "the client is offline"), logs a message advising to check Firebase configuration.
+ */
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
@@ -48,6 +73,16 @@ export interface FirestoreErrorInfo {
   }
 }
 
+/**
+ * Normalize a Firestore-related error into structured diagnostic information and rethrow it as a JSON-encoded Error.
+ *
+ * Logs the original error and the constructed diagnostic object for debugging.
+ *
+ * @param error - The caught error value to normalize.
+ * @param operationType - The Firestore operation being performed when the error occurred.
+ * @param path - The Firestore document or collection path related to the operation, or `null` if not applicable.
+ * @throws An `Error` whose message is the JSON serialization of the constructed `FirestoreErrorInfo` object.
+ */
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   console.error(`Firestore Error [${operationType}] at ${path}:`, error);
   
