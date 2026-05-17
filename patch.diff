@@ -1,22 +1,19 @@
---- src/components/views/ProjectDetailView.tsx
-+++ src/components/views/ProjectDetailView.tsx
-@@ -41,6 +41,7 @@
-     setProjects,
-     deleteProject,
-     handleUpdateTasks,
--    addStripeIntegration
-+    addStripeIntegration,
-+    updateVentureBranding
-   } = useStore();
+--- src/store/slices/__tests__/authSlice.test.ts
++++ src/store/slices/__tests__/authSlice.test.ts
+@@ -58,7 +58,7 @@
 
-@@ -78,9 +78,7 @@
-   };
+   describe('handleLogin', () => {
+     it('successfully logs in with popup', async () => {
+-      vi.mocked(signInWithPopup).mockResolvedValueOnce({} as any);
++      vi.mocked(signInWithPopup).mockResolvedValueOnce({} as never);
 
-   const selectLogoType = (type: 'monolith' | 'orbit' | 'prism') => {
--    // This should ideally be handled via a store action or passed prop
--    // For now, we'll just log it or handle it if we add the function
--    console.log('Selected logo type:', type);
-+    updateVentureBranding({ logoType: type });
-   };
+       await slice.handleLogin();
 
-   const saveVentureDetails = () => {
+@@ -71,7 +71,7 @@
+       const popupError = new Error('Popup blocked');
+       (popupError as any).code = 'auth/popup-blocked';
+       vi.mocked(signInWithPopup).mockRejectedValueOnce(popupError);
+-      vi.mocked(signInWithRedirect).mockResolvedValueOnce({} as any);
++      vi.mocked(signInWithRedirect).mockResolvedValueOnce({} as never);
+
+       await slice.handleLogin();
