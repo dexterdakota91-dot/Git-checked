@@ -8,7 +8,7 @@ import { Project } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
-const extractJson = (raw: string) => {
+export const extractJson = (raw: string) => {
   const cleaned = raw
     .trim()
     .replace(/^```json\s*/i, "")
