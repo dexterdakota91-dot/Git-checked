@@ -17,7 +17,6 @@ export default function BankView() {
   const { plaidError, isBankLinked, setIsBankLinked, plaidToken, userState } = useStore();
 
   const onSuccess = React.useCallback<PlaidLinkOnSuccess>((public_token, metadata) => {
-    console.log('Plaid Success:', public_token, metadata);
     setIsBankLinked(true);
   }, [setIsBankLinked]);
 
