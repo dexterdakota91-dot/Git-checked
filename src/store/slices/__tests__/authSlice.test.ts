@@ -145,3 +145,38 @@ describe('authSlice', () => {
     });
   });
 });
+
+
+describe('authSlice - setUserState', () => {
+  let setMock: any;
+  let getMock: any;
+  let apiMock: any;
+  let slice: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setMock = vi.fn();
+    getMock = vi.fn();
+    apiMock = vi.fn();
+
+    slice = createAuthSlice(setMock, getMock, apiMock);
+  });
+
+  it('allows setting an empty string', () => {
+    slice.setUserState('');
+    expect(setMock).toHaveBeenCalledWith({ userState: '' });
+  });
+
+  it('allows setting a valid US state', () => {
+    slice.setUserState('California');
+    expect(setMock).toHaveBeenCalledWith({ userState: 'California' });
+  });
+
+  it('sanitizes and logs warning for invalid state', () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    slice.setUserState('InvalidState');
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid US state provided: InvalidState'));
+    expect(setMock).toHaveBeenCalledWith({ userState: '' });
+    consoleWarnSpy.mockRestore();
+  });
+});
