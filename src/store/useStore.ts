@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db, OperationType, handleFirestoreError } from '../lib/firebase';
-import { doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { doc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';
 
 import { AuthSlice, createAuthSlice } from './slices/authSlice';
 import { ChatSlice, createChatSlice } from './slices/chatSlice';
@@ -55,9 +55,12 @@ export const useStore = create<AppState>()((set, get, api) => ({
     const { currentUser, projects } = get();
     if (!currentUser || projects.length === 0) return;
     try {
+      const batch = writeBatch(db);
       for (const p of projects) {
-        await deleteDoc(doc(db, 'projects', p.id));
+        batch.delete(doc(db, 'projects', p.id));
       }
+      await batch.commit();
+
       set({ selectedProject: null, activeTab: 'idea-lab', isUserSettingsOpen: false });
     } catch (error) {
       console.error("Account reset failed", error);
