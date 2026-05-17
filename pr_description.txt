@@ -1,0 +1,8 @@
+🧪 Add tests for generateBusinessIdeas
+
+🎯 **What:** Added comprehensive test coverage for `generateBusinessIdeas` in `src/services/gemini.ts` which was previously lacking tests. Mocked the underlying `@google/genai` dependency to enable robust deterministic testing without making real network requests.
+📊 **Coverage:** Covered 3 new scenarios:
+- Successful AI API response including verification of parameters sent to the prompt based on input attributes.
+- Missing API Key scenario verifying fallback behavior.
+- Failed API call scenarios verifying error catch and fallback behavior.
+✨ **Result:** Enhanced the resilience and reliability of the Gemini AI integration suite, ensuring fallback mechanisms work correctly under failure conditions and providing a solid foundation for future refactoring.

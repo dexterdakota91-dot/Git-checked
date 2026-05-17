@@ -1,0 +1,5 @@
+🧪 Add tests for generateBusinessIdeas
+
+🎯 **What:** Added tests to cover the generateBusinessIdeas AI service call logic, which was previously untested.
+📊 **Coverage:** Covered happy paths (successful AI response and prompt parsing), missing API key fallbacks, and API failure fallbacks.
+✨ **Result:** Increased code reliability by verifying AI mock integration and ensuring resilient fallback behavior for the business ideation service.
