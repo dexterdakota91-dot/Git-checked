@@ -3,6 +3,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc, query, collection, where, onSnapshot } from 'firebase/firestore';
 import { auth, db, OperationType, handleFirestoreError, getRedirectResult } from '../lib/firebase';
 import { useStore } from '../store/useStore';
+import { USState } from '../constants/mockData';
 import { Project } from '../types';
 
 /**
@@ -22,6 +23,7 @@ export function useFirebaseListeners() {
           console.log("Successfully signed in via redirect:", result.user.uid);
           // We don't need to manually update state here because the onAuthStateChanged listener
           // will automatically catch the state change and update the store.
+
         }
       }).catch((error) => {
         console.error("Error during redirect sign-in handling:", error);
@@ -38,7 +40,7 @@ export function useFirebaseListeners() {
           if (!userDoc.exists()) {
             store.setShowOnboarding(true);
           } else {
-            store.setUserState(userDoc.data().state || '');
+            store.setUserState((userDoc.data().state as USState) || '');
           }
         }).catch(error => {
           console.error("Error fetching user profile:", error);
