@@ -4,8 +4,6 @@ import { db, OperationType, handleFirestoreError } from '../../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
 export interface BankingSlice {
-  userState: string;
-  setUserState: (state: string) => void;
   isBankLinked: boolean;
   setIsBankLinked: (isLinked: boolean) => void;
   plaidToken: string | null;
@@ -17,8 +15,6 @@ export interface BankingSlice {
 }
 
 export const createBankingSlice: StateCreator<AppState, [], [], BankingSlice> = (set) => ({
-  userState: '',
-  setUserState: (state) => set({ userState: state }),
   isBankLinked: false,
   setIsBankLinked: (isLinked) => set({ isBankLinked: isLinked }),
   plaidToken: null,
