@@ -22,9 +22,11 @@ const GLOSSARY_TERMS = {
 };
 
 /**
- * Render the "Knowledge Base" glossary page that groups platform and industry terms into categorized cards.
+ * Render the Knowledge Base page that displays glossary terms grouped by category.
  *
- * @returns A React element that displays glossary cards for each category in `GLOSSARY_TERMS`, showing each term and its definition.
+ * Renders a card for each category in the glossary, showing each term and its definition.
+ *
+ * @returns A React element that displays categorized glossary cards with terms and definitions.
  */
 export default function GlossaryView() {
   return (

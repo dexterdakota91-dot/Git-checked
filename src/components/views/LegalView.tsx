@@ -4,11 +4,11 @@ import { Scale, Shield, FileText, AlertTriangle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 /**
- * Render the "Legal Center" page containing Terms of Service, Privacy Policy, and Disclaimers & Liability sections.
+ * Renders the Legal Center page containing three static informational sections: Terms of Service, Privacy Policy, and Disclaimers & Liability.
  *
- * The view displays a header and three informational cards with static legal and privacy text related to using Aetheris Ventures.
+ * The view displays a header and three cards with static legal and privacy text related to using Aetheris Ventures.
  *
- * @returns The JSX element representing the Legal Center view
+ * @returns The JSX element for the Legal Center view
  */
 export default function LegalView() {
   return (

@@ -37,11 +37,11 @@ function ScrollArea({
 }
 
 /**
- * Render a styled scrollbar for a ScrollArea with configurable orientation.
+ * Renders a styled scrollbar for a ScrollArea with configurable orientation.
  *
  * @param className - Additional CSS classes to apply to the scrollbar container
  * @param orientation - Scrollbar orientation, either `"vertical"` or `"horizontal"`
- * @returns A ScrollArea scrollbar element containing a thumb element
+ * @returns The rendered ScrollArea scrollbar element with an internal thumb element
  */
 function ScrollBar({
   className,

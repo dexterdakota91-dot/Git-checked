@@ -3,12 +3,16 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cn } from "@/lib/utils"
 
 /**
- * Render a styled progress root that applies default layout classes and includes a track with an indicator.
+ * Renders a progress root with default layout classes and an internal track and indicator.
+ *
+ * The component forwards `value` and other props to `ProgressPrimitive.Root`, merges `className`
+ * with the default layout classes, places `children` before the progress bar, and always renders
+ * a `ProgressTrack` containing a `ProgressIndicator`.
  *
  * @param className - Additional CSS class names to merge with the default layout
- * @param children - Optional content placed before the track (e.g., a label)
- * @param value - Progress value as a number between 0 and 100 representing completion percentage
- * @returns The rendered progress root element
+ * @param children - Optional content rendered before the track (for example, a label)
+ * @param value - Progress percentage from 0 to 100 indicating completion
+ * @returns The rendered `ProgressPrimitive.Root` element
  */
 function Progress({
   className,
@@ -69,9 +73,9 @@ function ProgressIndicator({
 }
 
 /**
- * Renders a styled progress label element with default typography and forwarded props.
+ * Renders a progress label with default small, medium-weight typography and forwarded props.
  *
- * @returns The rendered progress label element.
+ * @returns The progress label element.
  */
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   return (
@@ -84,9 +88,9 @@ function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
 }
 
 /**
- * Renders the progress value element aligned to the end with default typography and spacing.
+ * Renders a progress value element aligned to the end with default typography and spacing.
  *
- * @returns The progress value element with default classes merged with `className` and remaining props forwarded to the underlying primitive.
+ * @returns The rendered progress value element.
  */
 function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (

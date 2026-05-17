@@ -40,9 +40,9 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 /**
- * Renders the card title container with preset typography classes and any additional `className`.
+ * Renders the card title container with preset typography and accepts additional `className` and other div props.
  *
- * @returns A `div` element with `data-slot="card-title"` whose class list combines the component's typography styles and the supplied `className`
+ * @returns A `div` element with `data-slot="card-title"` whose class list combines the component's typography styles and any supplied `className`
  */
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -74,9 +74,9 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 /**
- * Renders the card's action container positioned at the top-right of the card.
+ * Card action area positioned in the card's top-right corner.
  *
- * @returns A `div` element with `data-slot="card-action"` and layout classes applied for top-right placement; accepts additional `div` props and `className` overrides.
+ * @returns A `div` element with `data-slot="card-action"` positioned in the top-right of the card; merges the provided `className` with layout classes and forwards other `div` props.
  */
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -92,11 +92,9 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 /**
- * Renders the card's content container with base padding and slot attributes.
+ * Card content container used to hold the main content of a card.
  *
- * Merges the incoming `className` with the component's padding classes and spreads other `div` props onto the element.
- *
- * @returns A `div` element used as the card content area (`data-slot="card-content"`).
+ * @returns The content `div` element with `data-slot="card-content"`.
  */
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (

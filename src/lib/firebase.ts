@@ -74,12 +74,10 @@ export interface FirestoreErrorInfo {
 }
 
 /**
- * Normalize a Firestore-related error into structured diagnostic information and rethrow it as a JSON-encoded Error.
- *
- * Logs the original error and the constructed diagnostic object for debugging.
+ * Normalize a Firestore error into structured diagnostic information and rethrow it as a JSON-encoded Error.
  *
  * @param error - The caught error value to normalize.
- * @param operationType - The Firestore operation being performed when the error occurred.
+ * @param operationType - The Firestore operation that was being performed when the error occurred.
  * @param path - The Firestore document or collection path related to the operation, or `null` if not applicable.
  * @throws An `Error` whose message is the JSON serialization of the constructed `FirestoreErrorInfo` object.
  */

@@ -6,9 +6,9 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { X } from "lucide-react"
 
 /**
- * Wraps `DialogPrimitive.Root`, attaching `data-slot="dialog"` and forwarding all received props.
+ * Render the dialog root element with a data-slot of "dialog" and forward all received props.
  *
- * @param props - Props to pass through to `DialogPrimitive.Root`
+ * @param props - Props forwarded to the dialog root element
  * @returns The rendered dialog root element
  */
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -67,12 +67,12 @@ function DialogOverlay({
 }
 
 /**
- * Render the dialog's portal-backed popup surface including an overlay, built-in close button, and scrollable content area.
+ * Renders the dialog popup and overlay with a built-in close button and a scrollable content area.
  *
  * @param className - Additional classes merged into the popup container's class list
  * @param children - Content rendered inside the dialog's scrollable region
  * @param props - Remaining props forwarded to the underlying popup primitive
- * @returns The dialog content element
+ * @returns The rendered dialog content element
  */
 function DialogContent({
   className,
@@ -160,9 +160,9 @@ function DialogFooter({
 }
 
 /**
- * Render a dialog title element with the library's heading typography styles applied.
+ * Renders a dialog title with the library's heading typography classes applied.
  *
- * @returns A React element representing the dialog title with heading typography classes merged with any provided `className`.
+ * @returns The dialog title element with the provided `className` merged into the default heading classes.
  */
 function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
