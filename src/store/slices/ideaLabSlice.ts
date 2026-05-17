@@ -4,6 +4,10 @@ import { BusinessIdea } from '../../types';
 import { generateBusinessIdeas, generateRefinedTemplate } from '../../services/gemini';
 import { PREDEFINED_TEMPLATES } from '../../constants/templates';
 
+
+const MAX_TEMPLATES = 10;
+const MAX_CONCURRENT = 3;
+
 export interface IdeaLabSlice {
   ideas: BusinessIdea[];
   setIdeas: (ideas: BusinessIdea[]) => void;
@@ -45,8 +49,14 @@ export const createIdeaLabSlice: StateCreator<AppState, [], [], IdeaLabSlice> = 
     const { userState } = get();
     set({ isTemplatesGenerating: true });
     try {
-      const templatePromises = Array.from({ length: count }, () => generateRefinedTemplate(userState));
-      const templates = await Promise.all(templatePromises);
+      const validCount = Math.max(1, Math.min(MAX_TEMPLATES, Math.floor(Number(count) || 2)));
+      const templates: (BusinessIdea | null)[] = [];
+      for (let i = 0; i < validCount; i += MAX_CONCURRENT) {
+        const batchSize = Math.min(MAX_CONCURRENT, validCount - i);
+        const batchPromises = Array.from({ length: batchSize }, () => generateRefinedTemplate(userState));
+        const batchResults = await Promise.all(batchPromises);
+        templates.push(...batchResults);
+      }
 
       const newTemplates: BusinessIdea[] = templates
         .map((template, i) => template ? { ...template, id: `blueprint-${Date.now()}-${i}` } : null)
