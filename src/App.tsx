@@ -93,8 +93,8 @@ function AetherisApp() {
     const { type, value } = pendingBrandingUpdate;
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);
-      let updatedBranding = { ...(selectedProject.branding || {}) };
-      let updateData: any = {};
+      const updatedBranding = { ...(selectedProject.branding || {}) };
+      const updateData: any = {};
 
       if (type === 'logo') {
         updatedBranding.logoType = value;
