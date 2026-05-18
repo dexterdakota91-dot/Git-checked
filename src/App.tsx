@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useStore } from './store/useStore';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from './lib/firebase';
+import type { Project } from './types';
 
 /**
  * Renders the top-level application, providing global error handling, routing, and analytics.
@@ -66,7 +67,7 @@ function AetherisApp() {
     const fetchLinkToken = async () => {
       try {
         const response = await fetch('/api/plaid/create-link-token', { method: 'POST' });
-        
+
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           throw new Error("Received non-JSON response from server");
@@ -87,13 +88,6 @@ function AetherisApp() {
     fetchLinkToken();
   }, [setPlaidToken, setPlaidError]);
 
-  const handleConfirmBranding = async () => {
-    if (!selectedProject || !pendingBrandingUpdate) return;
-    
-    const { type, value } = pendingBrandingUpdate;
-    try {
-      const projectRef = doc(db, 'projects', selectedProject.id);
-      const updatedBranding = { ...(selectedProject.branding || {}) };
 interface BrandingUpdateData {
   name?: string;
   branding: {
@@ -104,14 +98,14 @@ interface BrandingUpdateData {
   };
 }
 
-const handleConfirmBranding = async () => {
-  if (!selectedProject || !pendingBrandingUpdate) return;
-  
-  const { type, value } = pendingBrandingUpdate;
-  try {
-    const projectRef = doc(db, 'projects', selectedProject.id);
-    const updatedBranding = { ...(selectedProject.branding || {}) };
-    const updateData: Partial<BrandingUpdateData> = {};
+  const handleConfirmBranding = async () => {
+    if (!selectedProject || !pendingBrandingUpdate) return;
+
+    const { type, value } = pendingBrandingUpdate;
+    try {
+      const projectRef = doc(db, 'projects', selectedProject.id);
+      const updatedBranding = { ...(selectedProject.branding || {}) };
+      const updateData: Partial<BrandingUpdateData> = {};
 
       if (type === 'logo') {
         updatedBranding.logoType = value;
@@ -126,7 +120,7 @@ const handleConfirmBranding = async () => {
 
       updateData.branding = updatedBranding;
       await updateDoc(projectRef, updateData);
-      setSelectedProject({ ...selectedProject, ...updateData });
+      setSelectedProject({ ...selectedProject, ...updateData } as Project);
       setIsBrandingConfirmOpen(false);
       setPendingBrandingUpdate(null);
     } catch (error) {
