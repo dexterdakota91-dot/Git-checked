@@ -24,7 +24,8 @@ export default tseslint.config(
       'no-useless-escape': 'off',
       'no-useless-escape': 'off',
       'no-useless-assignment': 'off',
-      'react-hooks/exhaustive-deps': 'off',
+      'no-useless-assignment': 'off',
+      '`@typescript-eslint/no-unused-expressions`': 'off'
       '@typescript-eslint/no-unused-expressions': 'off'
     }
   }
