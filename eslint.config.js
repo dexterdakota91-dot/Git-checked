@@ -19,7 +19,9 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
+    rules: {
+      '`@typescript-eslint/no-explicit-any`': 'off',
+      'no-useless-escape': 'off',
       'no-useless-escape': 'off',
       'no-useless-assignment': 'off',
       'react-hooks/exhaustive-deps': 'off',
