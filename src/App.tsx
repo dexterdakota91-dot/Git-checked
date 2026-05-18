@@ -94,7 +94,24 @@ function AetherisApp() {
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);
       const updatedBranding = { ...(selectedProject.branding || {}) };
-      const updateData: any = {};
+interface BrandingUpdateData {
+  name?: string;
+  branding: {
+    logoType?: string;
+    selectedName?: string;
+    selectedPalette?: string[];
+    missionStatement?: string;
+  };
+}
+
+const handleConfirmBranding = async () => {
+  if (!selectedProject || !pendingBrandingUpdate) return;
+  
+  const { type, value } = pendingBrandingUpdate;
+  try {
+    const projectRef = doc(db, 'projects', selectedProject.id);
+    const updatedBranding = { ...(selectedProject.branding || {}) };
+    const updateData: Partial<BrandingUpdateData> = {};
 
       if (type === 'logo') {
         updatedBranding.logoType = value;
