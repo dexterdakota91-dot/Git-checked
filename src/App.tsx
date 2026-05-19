@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { useStore } from './store/useStore';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from './lib/firebase';
-import type { Project } from './types';
 
 /**
  * Renders the top-level application, providing global error handling, routing, and analytics.
@@ -88,16 +87,6 @@ function AetherisApp() {
     fetchLinkToken();
   }, [setPlaidToken, setPlaidError]);
 
-interface BrandingUpdateData {
-  name?: string;
-  branding: {
-    logoType?: string;
-    selectedName?: string;
-    selectedPalette?: string[];
-    missionStatement?: string;
-  };
-}
-
   const handleConfirmBranding = async () => {
     if (!selectedProject || !pendingBrandingUpdate) return;
 
@@ -105,7 +94,7 @@ interface BrandingUpdateData {
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);
       const updatedBranding = { ...(selectedProject.branding || {}) };
-      const updateData: Partial<BrandingUpdateData> = {};
+      const updateData: any = {};
 
       if (type === 'logo') {
         updatedBranding.logoType = value;
@@ -120,7 +109,7 @@ interface BrandingUpdateData {
 
       updateData.branding = updatedBranding;
       await updateDoc(projectRef, updateData);
-      setSelectedProject({ ...selectedProject, ...updateData } as Project);
+      setSelectedProject({ ...selectedProject, ...updateData });
       setIsBrandingConfirmOpen(false);
       setPendingBrandingUpdate(null);
     } catch (error) {
