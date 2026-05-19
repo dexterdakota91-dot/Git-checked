@@ -2,8 +2,13 @@ import { collection, getDocs, doc, updateDoc, arrayUnion, query, where, Firestor
 import { GoogleGenAI } from "@google/genai";
 
 export const startAutonomyEngine = (db: Firestore) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
+export const startAutonomyEngine = (db: Firestore) => {
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!geminiApiKey) {
+    console.warn("[Autonomy Engine] GEMINI_API_KEY is missing. Engine disabled.");
+    return;
+  }
+  const ai = new GoogleGenAI({ apiKey: geminiApiKey });
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   const stripUndefined = (obj: any) => JSON.parse(JSON.stringify(obj));
 
