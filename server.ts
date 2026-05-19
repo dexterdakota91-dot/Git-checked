@@ -39,7 +39,7 @@ async function startServer() {
         "utf8"
       );
       appletConfig = JSON.parse(configData);
-    } catch (e) {
+    } catch {
       // ignore
     }
 
