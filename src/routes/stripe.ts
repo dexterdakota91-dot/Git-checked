@@ -24,14 +24,23 @@ stripeRouter.post("/create-checkout", async (req, res) => {
     }
 
     const { amount, projectName } = req.body;
+    const unitAmount = Number(amount);
+    if (!Number.isInteger(unitAmount) || unitAmount <= 0) {
+      return res.status(400).json({ error: "amount must be a positive integer in cents." });
+    }
+    const normalizedProjectName =
+      typeof projectName === "string" && projectName.trim().length > 0
+        ? projectName.trim().slice(0, 120)
+        : "Project";
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
             currency: "usd",
-            product_data: { name: `Venture Capital: ${projectName}` },
-            unit_amount: amount,
+            product_data: { name: `Venture Capital: ${normalizedProjectName}` },
+            unit_amount: unitAmount,
           },
           quantity: 1,
         },
