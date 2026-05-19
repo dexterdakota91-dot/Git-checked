@@ -66,7 +66,7 @@ function AetherisApp() {
     const fetchLinkToken = async () => {
       try {
         const response = await fetch('/api/plaid/create-link-token', { method: 'POST' });
-        
+
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           throw new Error("Received non-JSON response from server");
@@ -89,7 +89,7 @@ function AetherisApp() {
 
   const handleConfirmBranding = async () => {
     if (!selectedProject || !pendingBrandingUpdate) return;
-    
+
     const { type, value } = pendingBrandingUpdate;
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);

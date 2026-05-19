@@ -44,7 +44,7 @@ export function useFirebaseListeners() {
           setLoginError(error?.message || "Sign-in failed. Please try again.");
         }
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []); // Run once on mount only
 
   // Auth Listener
