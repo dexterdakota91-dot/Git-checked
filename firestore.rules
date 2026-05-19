@@ -116,7 +116,7 @@ service cloud.firestore {
     match /projects/{projectId} {
       allow read: if (resource.data.isAutonomous == true) || isDocOwner() || isAdmin();
       allow create: if isAuthenticated() && isValidProject(request.resource.data) && uidUnchanged();
-      allow update: if (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isAutonomous']) && request.resource.data.isAutonomous is bool) || (isAuthenticated() && resource.data.isAutonomous == true) || isDocOwner() || isAdmin();
+      allow update: if (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isAutonomous']) && request.resource.data.isAutonomous is bool) || (isAuthenticated() && resource.data.isAutonomous == true && uidNotModified() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['agents', 'tasks', 'logs']) && (!('agents' in request.resource.data) || request.resource.data.agents is list) && (!('tasks' in request.resource.data) || request.resource.data.tasks is list) && (!('logs' in request.resource.data) || request.resource.data.logs is list)) || isDocOwner() || isAdmin();
       allow delete: if isDocOwner() || isAdmin();
     }
   }

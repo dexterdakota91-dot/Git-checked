@@ -7,6 +7,7 @@ import { GoogleGenAI } from "@google/genai";
 import Stripe from "stripe";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { initializeApp, getApps } from "firebase/app";
+import { getAuth, signInAnonymously } from "firebase/auth";
 import { getFirestore, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
 import fs from "fs";
 
@@ -227,7 +228,18 @@ async function startServer() {
     }
   };
 
+
+  // Authenticate server anonymously for autonomy engine
+  try {
+    const auth = getAuth(firebaseApp);
+    await signInAnonymously(auth);
+    console.log("[Autonomy Engine] Authenticated anonymously.");
+  } catch (error) {
+    console.error("[Autonomy Engine] Failed to authenticate:", error);
+  }
+
   // Start the heartbeat (Every 10 minutes)
+
   const HEARTBEAT_INTERVAL = 10 * 60 * 1000;
   setInterval(runAutonomyEngine, HEARTBEAT_INTERVAL);
   // Optional: Run immediately on startup
