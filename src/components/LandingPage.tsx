@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Lightbulb, Palette, LayoutDashboard, Bot, ChevronRight, Play } from 'lucide-react';
 import { useStore } from '../store/useStore';

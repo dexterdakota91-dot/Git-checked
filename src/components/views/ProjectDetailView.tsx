@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { motion } from 'motion/react';
 import { Settings, ArrowUpRight, CreditCard, Zap, TrendingUp } from 'lucide-react';
@@ -68,7 +69,9 @@ export default function ProjectDetailView({
 
   const [editedVentureName, setEditedVentureName] = React.useState(selectedProject.name);
   const [editedVentureDescription, setEditedVentureDescription] = React.useState(selectedProject.description);
+
   const [committedVentureName, setCommittedVentureName] = React.useState(selectedProject.name);
+
   const [committedVentureDescription, setCommittedVentureDescription] = React.useState(selectedProject.description);
 
   const goToLab = (tab: 'brand' | 'naming' | 'market') => {

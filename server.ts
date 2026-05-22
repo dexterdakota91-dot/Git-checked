@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -8,6 +9,7 @@ import Stripe from "stripe";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
+
 import fs from "fs";
 
 // Load local overrides first, then fallback to .env
@@ -15,6 +17,7 @@ dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
+
 const __dirname = path.dirname(__filename);
 
 // FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)

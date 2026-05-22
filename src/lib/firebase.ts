@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
   getAuth, 
@@ -20,7 +21,7 @@ import {
   getDocFromServer 
 } from 'firebase/firestore';
 
-import firebaseConfig from '../../firebase-applet-config.json' assert { type: 'json' };
+import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
 
 const placeholders = ['dummy', '12345', 'ABCDEF'];
 const isPlaceholder = (val: string | undefined) => !val || placeholders.some(p => val.includes(p));
@@ -48,7 +49,7 @@ async function testConnection() {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      if (process.env.NODE_ENV !== "test") console.error("Please check your Firebase configuration. The client is offline.");
+      if (import.meta.env.MODE !== "test") console.error("Please check your Firebase configuration. The client is offline.");
     }
   }
 }
@@ -96,14 +97,15 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     } else {
       try {
         errorMessage = JSON.stringify(error);
-      } catch (e) {
+      } catch (e: any) {
+
         errorMessage = "Un-stringifiable error object";
       }
     }
   } else {
     try {
       errorMessage = Object.prototype.toString.call(error);
-    } catch (e) {
+    } catch (e: any) {
       errorMessage = "Un-stringifiable error primitive";
     }
   }

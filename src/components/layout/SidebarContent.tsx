@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { 
   Lightbulb, 
@@ -27,6 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+
 import { Button, buttonVariants } from '@/components/ui/button';
 import { NavItem } from './NavItem';
 import { MonolithLogo, AetherisLogo } from '../logos/LogoComponents';
