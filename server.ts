@@ -1,3 +1,4 @@
+import admin from "firebase-admin";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -7,7 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 import Stripe from "stripe";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { initializeApp, getApps } from "firebase/app";
-import { getFirestore, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
+import { getFirestore, runTransaction, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
 import fs from "fs";
 
 // Load local overrides first, then fallback to .env
@@ -28,8 +29,25 @@ const firebaseConfig = {
   messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
 };
-const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+
+let db: any;
+try {
+  if (fs.existsSync("firebase-applet-config.json")) {
+    const appletConfig = JSON.parse(fs.readFileSync("firebase-applet-config.json", "utf8"));
+    if (admin.apps.length === 0) {
+      admin.initializeApp({
+        credential: admin.credential.cert(appletConfig)
+      });
+    }
+    db = admin.firestore();
+  } else {
+    throw new Error("No admin config found");
+  }
+} catch (e) {
+  const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+}
+
 
 /**
  * Initialize and start the Express server, background Autonomy Engine, and related API routes.
@@ -58,7 +76,7 @@ async function startServer() {
   const stripUndefined = (obj: any): any => {
     if (Array.isArray(obj)) {
       return obj.map(stripUndefined);
-    } else if (obj !== null && typeof obj === 'object') {
+    } else if (obj !== null && typeof obj === 'object' && obj.constructor === Object) {
       return Object.entries(obj).reduce((acc: any, [key, value]) => {
         if (value !== undefined) {
           acc[key] = stripUndefined(value);
@@ -83,10 +101,16 @@ async function startServer() {
       return;
     }
 
+
     try {
-      const projectsRef = collection(db, "projects");
-      const q = query(projectsRef, where("isAutonomous", "==", true));
-      const querySnapshot = await getDocs(q);
+      let querySnapshot;
+      if (admin.apps.length > 0) {
+        querySnapshot = await db.collection("projects").where("isAutonomous", "==", true).get();
+      } else {
+        const projectsRef = collection(db, "projects");
+        const q = query(projectsRef, where("isAutonomous", "==", true));
+        querySnapshot = await getDocs(q);
+      }
 
       for (const projectDoc of querySnapshot.docs) {
         const project = projectDoc.data();
@@ -132,7 +156,7 @@ async function startServer() {
 
           const text = response.text || "";
           // Robust regex to find [ACTION:TYPE:DATA] even if DATA contains brackets or colons
-          const actionMatch = text.match(/\[ACTION:([^:]+):([\s\S]*?)\]\s*$/m) || text.match(/\[ACTION:([^:]+):([\s\S]*?)\]/);
+          const actionMatch = text.match(/\[ACTION:([^:]+):([\s\S]*?)\]\s*$/);
 
           if (actionMatch) {
             const type = actionMatch[1].trim();
@@ -154,7 +178,14 @@ async function startServer() {
 
             console.log(`[Autonomy Engine] Executing Action: ${type} for ${project.name}`);
             
-            const projectRef = doc(db, "projects", projectId);
+            let projectRef;
+            if (admin.apps.length > 0) {
+              projectRef = db.collection("projects").doc(projectId);
+            } else {
+              projectRef = doc(db, "projects", projectId);
+            }
+
+            const aUnion = admin.apps.length > 0 ? admin.firestore.FieldValue.arrayUnion : arrayUnion;
 
             if (type === 'CREATE_AGENT') {
               const newAgent = stripUndefined({
@@ -167,42 +198,86 @@ async function startServer() {
                 capabilities: data.capabilities || [],
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
-              await updateDoc(projectRef, { 
-                agents: arrayUnion(newAgent),
-                logs: arrayUnion({
+
+              const updateData = {
+                agents: aUnion(newAgent),
+                logs: aUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
                   type: 'success',
                   message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
                   details: `Role: ${data.role || 'Unspecified'}`
                 })
-              });
+              };
+
+              if (admin.apps.length > 0) {
+                await projectRef.update(updateData);
+              } else {
+                await updateDoc(projectRef, updateData);
+              }
             } else if (type === 'COMPLETE_TASK') {
-              const updatedTasks = (project.tasks || []).map((t: any) => 
-                t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
-              );
-              await updateDoc(projectRef, stripUndefined({ 
-                tasks: updatedTasks,
-                logs: arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                  details: `Task ID: ${data.taskId || 'unknown'}`
-                })
-              }));
+
+              const performTransaction = async () => {
+                const transactionFn = async (transaction: any) => {
+                  let currentProject;
+                  if (typeof transaction.get === 'function') {
+                    // Admin SDK or Client transaction
+                    const docSnap = await transaction.get(projectRef);
+                    currentProject = typeof docSnap.data === 'function' ? docSnap.data() : undefined;
+                  }
+
+                  if (!currentProject) return;
+
+                  const updatedTasks = (currentProject.tasks || []).map((t: any) =>
+                    t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
+                  );
+
+                  const updateData = stripUndefined({
+                    tasks: updatedTasks,
+                    logs: admin.apps.length > 0 ? admin.firestore.FieldValue.arrayUnion({
+                      id: Date.now().toString(),
+                      timestamp: new Date().toISOString(),
+                      type: 'success',
+                      message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                      details: `Task ID: ${data.taskId || 'unknown'}`
+                    }) : arrayUnion({
+                      id: Date.now().toString(),
+                      timestamp: new Date().toISOString(),
+                      type: 'success',
+                      message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                      details: `Task ID: ${data.taskId || 'unknown'}`
+                    })
+                  });
+
+                  transaction.update(projectRef, updateData);
+                };
+
+                if (db.runTransaction) {
+                  await db.runTransaction(transactionFn);
+                } else {
+                  await runTransaction(db, transactionFn);
+                }
+              };
+              await performTransaction();
             } else if (type === 'ADD_LOG') {
-              await updateDoc(projectRef, stripUndefined({ 
-                logs: arrayUnion({
+              const updateData = stripUndefined({
+                logs: aUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
                   type: data.type || 'info',
                   message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
                   details: data.details || ""
                 })
-              }));
+              });
+
+              if (admin.apps.length > 0) {
+                await projectRef.update(updateData);
+              } else {
+                await updateDoc(projectRef, updateData);
+              }
             }
           }
+
           
           // Respectful delay between projects to avoid bursting
           await sleep(2000);
@@ -285,16 +360,18 @@ async function startServer() {
 
   app.post("/api/stripe/create-checkout", async (req, res) => {
     try {
+      const BASE_URL = process.env.SERVER_BASE_URL || "http://localhost:3000";
+
       if (!process.env.STRIPE_SECRET_KEY) {
         if (process.env.DEMO_MODE === "true" || process.env.demo_mode === "true") {
-          return res.json({ url: `${req.headers.origin}/dashboard?success=true&demo=true` });
+          return res.json({ url: new URL('/dashboard?success=true&demo=true', BASE_URL).toString() });
         }
-        return res.status(400).json({ error: "STRIPE_SECRET_KEY is missing. Enable DEMO_MODE=true for simulation." });
+        return res.status(500).json({ error: "STRIPE_SECRET_KEY is missing. Enable DEMO_MODE=true for simulation." });
       }
 
       const stripe = getStripeClient();
       if (!stripe) {
-        return res.status(400).json({ error: "Stripe client could not be initialized." });
+        return res.status(500).json({ error: "Stripe client could not be initialized." });
       }
 
       const { amount, projectName } = req.body;
@@ -311,14 +388,14 @@ async function startServer() {
           },
         ],
         mode: "payment",
-        success_url: `${req.headers.origin}/dashboard?success=true`,
-        cancel_url: `${req.headers.origin}/dashboard?canceled=true`,
+        success_url: new URL('/dashboard?success=true', BASE_URL).toString(),
+        cancel_url: new URL('/dashboard?canceled=true', BASE_URL).toString(),
       });
 
       res.json({ url: session.url });
     } catch (error: any) {
       console.error("Stripe Error:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: "Payment processing failed" });
     }
   });
 
