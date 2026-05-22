@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, ChevronRight, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

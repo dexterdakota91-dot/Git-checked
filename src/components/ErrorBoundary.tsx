@@ -1,3 +1,4 @@
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';

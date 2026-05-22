@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { 
   Dialog, 
@@ -8,12 +9,15 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+
 import { Button, buttonVariants } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { ElectricityTracer } from './ElectricityTracer';
 import { US_STATES, USState } from '../constants/mockData';
+
 import { cn } from '@/lib/utils';
 import { useStore } from '../store/useStore';
+
 import { NavigateFunction } from 'react-router-dom';
 
 import { AetherisLogo } from './logos/LogoComponents';

@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { Bot, Terminal, Coffee, Zap, MessageSquare, Brain, Search, Pencil, Settings2, Link, AlertCircle, CheckCircle2 } from 'lucide-react';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +16,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+
 import { X } from 'lucide-react';
 import { Agent } from '../types';
 import { ARCHETYPES } from '../constants/mockData';

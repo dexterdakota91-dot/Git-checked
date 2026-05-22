@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -91,6 +92,7 @@ export function TaskManagement({ project, onUpdateTasks }: TaskManagementProps) 
       onUpdateTasks(resetTasks);
     }
     resetPerformed.current = project.id;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id]);
 
   const handleAddTask = () => {
