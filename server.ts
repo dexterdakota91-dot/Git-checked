@@ -162,7 +162,7 @@ async function startServer() {
 
           const text = response.text || "";
           // Robust regex to find [ACTION:TYPE:DATA] even if DATA contains brackets or colons
-          const actionMatch = text.match(/\[ACTION:([^:]+):([\s\S]*?)\]\s*$/m) || text.match(/\[ACTION:([^:]+):([\s\S]*?)\]/);
+          const actionMatch = text.match(/\[ACTION:([^:]+):([\s\S]*?)\]\s*$/);
 
           if (actionMatch) {
             const type = actionMatch[1].trim();
