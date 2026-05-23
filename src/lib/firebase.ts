@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
   getAuth, 
@@ -19,36 +20,36 @@ import {
   onSnapshot, 
   getDocFromServer 
 } from 'firebase/firestore';
-const firebaseConfig = {
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-};
+
+import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
+
+const placeholders = ['dummy', '12345', 'ABCDEF'];
+const isPlaceholder = (val: string | undefined) => !val || placeholders.some(p => val.includes(p));
+
+if (
+  isPlaceholder(firebaseConfig.projectId) ||
+  isPlaceholder(firebaseConfig.apiKey) ||
+  isPlaceholder(firebaseConfig.appId)
+) {
+  console.error("CRITICAL ERROR: Firebase configuration contains placeholder values.");
+  console.error("Found placeholders in firebase-applet-config.json:");
+  console.error(JSON.stringify(firebaseConfig, null, 2));
+  throw new Error("Invalid Firebase Configuration: Placeholder values detected.");
+}
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || "(default)");
 export const googleProvider = new GoogleAuthProvider();
 
-// FIX: Export getRedirectResult so useFirebaseListeners can handle redirect sign-ins
 export { getRedirectResult };
 
-/**
- * Verifies Firestore connectivity by attempting to read a known test document.
- *
- * If the client is offline (error message includes "the client is offline"), logs a message advising to check Firebase configuration.
- */
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration. The client is offline.");
+      if (import.meta.env.MODE !== "test") console.error("Please check your Firebase configuration. The client is offline.");
     }
   }
 }
@@ -82,16 +83,6 @@ export interface FirestoreErrorInfo {
   }
 }
 
-/**
- * Normalize a Firestore-related error into structured diagnostic information and rethrow it as a JSON-encoded Error.
- *
- * Logs the original error and the constructed diagnostic object for debugging.
- *
- * @param error - The caught error value to normalize.
- * @param operationType - The Firestore operation being performed when the error occurred.
- * @param path - The Firestore document or collection path related to the operation, or `null` if not applicable.
- * @throws An `Error` whose message is the JSON serialization of the constructed `FirestoreErrorInfo` object.
- */
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   console.error(`Firestore Error [${operationType}] at ${path}:`, error);
   
@@ -106,14 +97,15 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     } else {
       try {
         errorMessage = JSON.stringify(error);
-      } catch (e) {
+      } catch (e: any) {
+
         errorMessage = "Un-stringifiable error object";
       }
     }
   } else {
     try {
       errorMessage = Object.prototype.toString.call(error);
-    } catch (e) {
+    } catch (e: any) {
       errorMessage = "Un-stringifiable error primitive";
     }
   }

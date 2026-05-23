@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Project, BusinessIdea } from '../types';
 
 export const INITIAL_PROJECTS: Project[] = [

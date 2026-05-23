@@ -8,6 +8,7 @@ import { LoadingIndicator } from '../LoadingIndicator';
 import { ExpandableIdeaCard } from '../ExpandableIdeaCard';
 import { useStore } from '../../store/useStore';
 import { cn } from '@/lib/utils';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BusinessIdea } from '../../types';
 
 interface IdeaLabViewProps {

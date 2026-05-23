@@ -26,10 +26,16 @@ export const extractJson = (raw: string) => {
   }
 };
 
+const isValidApiKey = (key?: string) => {
+  if (!key) return false;
+  if (key === "free" || key === "TODO" || key.length < 10) return false;
+  return true;
+};
+
 const callAi = async (prompt: string, systemInstruction: string, fallbackData: any) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      console.warn("GEMINI_API_KEY missing, using fallback.");
+    if (!isValidApiKey(process.env.GEMINI_API_KEY)) {
+      if (process.env.NODE_ENV !== "test") console.warn("GEMINI_API_KEY missing or placeholder, using fallback.");
       return fallbackData;
     }
 
@@ -41,7 +47,7 @@ const callAi = async (prompt: string, systemInstruction: string, fallbackData: a
     const text = response.text || "";
     return text;
   } catch (error) {
-    console.error("AI Service Error:", error);
+    if (process.env.NODE_ENV !== "test") console.error("AI Service Error:", error);
     return fallbackData;
   }
 };

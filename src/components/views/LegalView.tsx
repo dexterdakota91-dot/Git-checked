@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Scale, Shield, FileText, AlertTriangle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 

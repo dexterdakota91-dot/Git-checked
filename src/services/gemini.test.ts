@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { extractJson, suggestTasks } from './gemini';
+import { extractJson, suggestTasks, generateBusinessIdeas, generateNames, generateLogoConcepts, generateVoiceAndTone, generateMissionStatements, generatePalettes, specializeAgents, generateBranding, chatWithArchitect } from './gemini';
 
 const { mockGenerateContent } = vi.hoisted(() => {
   return {
@@ -69,7 +69,7 @@ describe('extractJson', () => {
 });
 
 
-describe('suggestTasks', () => {
+describe('Gemini AI Services', () => {
   let originalEnv: string | undefined;
 
   beforeEach(() => {
@@ -79,41 +79,144 @@ describe('suggestTasks', () => {
   });
 
   afterEach(() => {
-    process.env.GEMINI_API_KEY = originalEnv;
+    if (originalEnv !== undefined) {
+      process.env.GEMINI_API_KEY = originalEnv;
+    } else {
+      delete process.env.GEMINI_API_KEY;
+    }
   });
 
-  it('should return parsed tasks on successful API call', async () => {
-    const mockTasks = [
-      { title: "Test Task", description: "Do something", priority: "high", category: "technical", estimatedHours: 2, progress: 0 }
-    ];
+  describe('suggestTasks', () => {
+    it('should return parsed tasks on successful API call', async () => {
+      const mockTasks = [
+        { title: "Test Task", description: "Do something", priority: "high", category: "technical", estimatedHours: 2, progress: 0 }
+      ];
 
-    mockGenerateContent.mockResolvedValueOnce({
-      text: JSON.stringify(mockTasks)
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify(mockTasks)
+      });
+
+      const result = await suggestTasks('Test Venture', 'A great idea', 'Just started');
+
+      expect(mockGenerateContent).toHaveBeenCalled();
+      expect(result).toEqual(mockTasks);
     });
 
-    const result = await suggestTasks('Test Venture', 'A great idea', 'Just started');
+    it('should return fallback data when API key is missing', async () => {
+      delete process.env.GEMINI_API_KEY;
 
-    expect(mockGenerateContent).toHaveBeenCalled();
-    expect(result).toEqual(mockTasks);
+      const result = await suggestTasks('Test Venture', 'A great idea', 'Just started');
+
+      expect(mockGenerateContent).not.toHaveBeenCalled();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result[0]).toHaveProperty('title', 'Market Research'); // First fallback task
+    });
+
+    it('should return fallback data when API call fails', async () => {
+      mockGenerateContent.mockRejectedValueOnce(new Error('API Error'));
+
+      const result = await suggestTasks('Test Venture', 'A great idea', 'Just started');
+
+      expect(mockGenerateContent).toHaveBeenCalled();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result[0]).toHaveProperty('title', 'Market Research'); // First fallback task
+    });
   });
 
-  it('should return fallback data when API key is missing', async () => {
-    delete process.env.GEMINI_API_KEY;
-
-    const result = await suggestTasks('Test Venture', 'A great idea', 'Just started');
-
-    expect(mockGenerateContent).not.toHaveBeenCalled();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result[0]).toHaveProperty('title', 'Market Research'); // First fallback task
+  describe('generateBusinessIdeas', () => {
+    it('should generate business ideas correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify([{ title: 'Idea 1', description: 'Desc 1', tags: ['tag1'] }])
+      });
+      const result = await generateBusinessIdeas('tech');
+      expect(result).toHaveLength(1);
+      expect(result[0].title).toBe('Idea 1');
+    });
   });
 
-  it('should return fallback data when API call fails', async () => {
-    mockGenerateContent.mockRejectedValueOnce(new Error('API Error'));
+  describe('generateNames', () => {
+    it('should generate names correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify(['Name 1', 'Name 2'])
+      });
+      const result = await generateNames('Venture', 'Desc');
+      expect(result).toHaveLength(2);
+      expect(result[0]).toBe('Name 1');
+    });
+  });
 
-    const result = await suggestTasks('Test Venture', 'A great idea', 'Just started');
+  describe('generateLogoConcepts', () => {
+    it('should generate logo concepts correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify(['Concept 1', 'Concept 2'])
+      });
+      const result = await generateLogoConcepts('Venture', 'Desc');
+      expect(result).toHaveLength(2);
+      expect(result[0]).toBe('Concept 1');
+    });
+  });
 
-    expect(mockGenerateContent).toHaveBeenCalled();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result[0]).toHaveProperty('title', 'Market Research'); // First fallback task
+  describe('generateVoiceAndTone', () => {
+    it('should generate voice and tone correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify({ voice: 'Friendly', tone: 'Professional' })
+      });
+      const result = await generateVoiceAndTone('Venture', 'Desc');
+      expect(result.voice).toBe('Friendly');
+      expect(result.tone).toBe('Professional');
+    });
+  });
+
+  describe('generateMissionStatements', () => {
+    it('should generate mission statements correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify(['Mission 1', 'Mission 2'])
+      });
+      const result = await generateMissionStatements('Venture', 'Desc');
+      expect(result).toHaveLength(2);
+      expect(result[0]).toBe('Mission 1');
+    });
+  });
+
+  describe('generatePalettes', () => {
+    it('should generate palettes correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify([{ name: 'P1', colors: ['#000', '#fff'] }])
+      });
+      const result = await generatePalettes('Venture', 'Desc');
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('P1');
+    });
+  });
+
+  describe('specializeAgents', () => {
+    it('should specialize agents correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify([{ role: 'Agent 1', responsibilities: ['Task 1'] }])
+      });
+      const result = await specializeAgents('Venture', 'Desc');
+      expect(result).toHaveLength(1);
+      expect(result[0].role).toBe('Agent 1');
+    });
+  });
+
+  describe('generateBranding', () => {
+    it('should generate full branding correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: JSON.stringify({ ventureName: 'Brand', voiceAndTone: { voice: 'Tone' } })
+      });
+      const result = await generateBranding('Venture', 'Desc');
+      expect(result.ventureName).toBe('Brand');
+    });
+  });
+
+  describe('chatWithArchitect', () => {
+    it('should chat with architect correctly', async () => {
+      mockGenerateContent.mockResolvedValueOnce({
+        text: 'Architect Response'
+      });
+      const result = await chatWithArchitect('Hello', [{ role: 'user', text: 'Hi' }]);
+      expect(result).toBe('Architect Response');
+    });
   });
 });
