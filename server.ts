@@ -211,26 +211,29 @@ async function startServer() {
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
 
-              const updateData = {
-                agents: isDbAdmin ? adminFieldValue.arrayUnion(newAgent) : arrayUnion(newAgent),
-                logs: isDbAdmin ? adminFieldValue.arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
-                  details: `Role: ${data.role || 'Unspecified'}`
-                }) : arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
-                  details: `Role: ${data.role || 'Unspecified'}`
-                })
-              };
-
               if (isDbAdmin) {
+                const updateData = {
+                  agents: adminFieldValue.arrayUnion(newAgent),
+                  logs: adminFieldValue.arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: 'success',
+                    message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
+                    details: `Role: ${data.role || 'Unspecified'}`
+                  })
+                };
                 await adminDb.collection("projects").doc(projectId).update(updateData);
               } else {
+                const updateData = {
+                  agents: arrayUnion(newAgent),
+                  logs: arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: 'success',
+                    message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
+                    details: `Role: ${data.role || 'Unspecified'}`
+                  })
+                };
                 await updateDoc(doc(db, "projects", projectId), updateData);
               }
             } else if (type === 'COMPLETE_TASK') {
@@ -238,48 +241,53 @@ async function startServer() {
                 t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
               );
 
-              const updateData = stripUndefined({
-                tasks: updatedTasks,
-                logs: isDbAdmin ? adminFieldValue.arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                  details: `Task ID: ${data.taskId || 'unknown'}`
-                }) : arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                  details: `Task ID: ${data.taskId || 'unknown'}`
-                })
-              });
-
               if (isDbAdmin) {
+                const updateData = stripUndefined({
+                  tasks: updatedTasks,
+                  logs: adminFieldValue.arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: 'success',
+                    message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                    details: `Task ID: ${data.taskId || 'unknown'}`
+                  })
+                });
                 await adminDb.collection("projects").doc(projectId).update(updateData);
               } else {
+                const updateData = stripUndefined({
+                  tasks: updatedTasks,
+                  logs: arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: 'success',
+                    message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                    details: `Task ID: ${data.taskId || 'unknown'}`
+                  })
+                });
                 await updateDoc(doc(db, "projects", projectId), updateData);
               }
             } else if (type === 'ADD_LOG') {
-              const updateData = stripUndefined({
-                logs: isDbAdmin ? adminFieldValue.arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: data.type || 'info',
-                  message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
-                  details: data.details || ""
-                }) : arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: data.type || 'info',
-                  message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
-                  details: data.details || ""
-                })
-              });
-
               if (isDbAdmin) {
+                const updateData = stripUndefined({
+                  logs: adminFieldValue.arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: data.type || 'info',
+                    message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
+                    details: data.details || ""
+                  })
+                });
                 await adminDb.collection("projects").doc(projectId).update(updateData);
               } else {
+                const updateData = stripUndefined({
+                  logs: arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: data.type || 'info',
+                    message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
+                    details: data.details || ""
+                  })
+                });
                 await updateDoc(doc(db, "projects", projectId), updateData);
               }
             }
