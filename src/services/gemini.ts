@@ -28,7 +28,7 @@ export const extractJson = (raw: string) => {
 
 const callAi = async (prompt: string, systemInstruction: string, fallbackData: any) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY?.trim()) {
       if (process.env.NODE_ENV !== "test") console.warn("GEMINI_API_KEY missing, using fallback.");
       return fallbackData;
     }
