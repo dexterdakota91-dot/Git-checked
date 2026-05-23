@@ -1,14 +1,14 @@
-import { collection, getDocs, doc, updateDoc, arrayUnion, query, where, Firestore, DocumentData } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, arrayUnion, query, where, Firestore, runTransaction } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
 
 export const startAutonomyEngine = (db: Firestore) => {
-export const startAutonomyEngine = (db: Firestore) => {
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  if (!geminiApiKey) {
-    console.warn("[Autonomy Engine] GEMINI_API_KEY is missing. Engine disabled.");
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("[Autonomy Engine] GEMINI_API_KEY is missing. Aborting engine startup.");
     return;
   }
-  const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   const stripUndefined = (obj: any) => JSON.parse(JSON.stringify(obj));
 
@@ -113,19 +113,28 @@ export const startAutonomyEngine = (db: Firestore) => {
                 })
               });
             } else if (type === 'COMPLETE_TASK') {
-              const updatedTasks = tasks.map((t: any) =>
-                t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
-              );
-              await updateDoc(projectRef, stripUndefined({
-                tasks: updatedTasks,
-                logs: arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                  details: `Task ID: ${data.taskId || 'unknown'}`
-                })
-              }));
+              await runTransaction(db, async (transaction) => {
+                const docSnap = await transaction.get(projectRef);
+                if (!docSnap.exists()) {
+                  throw new Error("Project does not exist!");
+                }
+                const currentData = docSnap.data();
+                const currentTasks = currentData.tasks || [];
+                const updatedTasks = currentTasks.map((t: any) =>
+                  t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
+                );
+
+                transaction.update(projectRef, stripUndefined({
+                  tasks: updatedTasks,
+                  logs: arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: 'success',
+                    message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                    details: `Task ID: ${data.taskId || 'unknown'}`
+                  })
+                }));
+              });
             } else if (type === 'ADD_LOG') {
               await updateDoc(projectRef, stripUndefined({
                 logs: arrayUnion({

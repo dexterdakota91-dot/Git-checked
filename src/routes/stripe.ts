@@ -11,27 +11,35 @@ const getStripeClient = () => {
 
 stripeRouter.post("/create-checkout", async (req, res) => {
   try {
+    const baseUrl = process.env.APP_BASE_URL?.replace(/\/$/, "");
+    if (!baseUrl) {
+      return res.status(500).json({ error: "Server Configuration Error: APP_BASE_URL is not set." });
+    }
+
     if (!process.env.STRIPE_SECRET_KEY) {
       if (process.env.DEMO_MODE === "true" || process.env.demo_mode === "true") {
-        return res.json({ url: `${req.headers.origin}/dashboard?success=true&demo=true` });
+        return res.json({ url: `${baseUrl}/dashboard?success=true&demo=true` });
       }
-      return res.status(500).json({ error: "STRIPE_SECRET_KEY is missing. Enable DEMO_MODE=true for simulation." });
+      return res.status(400).json({ error: "STRIPE_SECRET_KEY is missing. Enable DEMO_MODE=true for simulation." });
     }
 
     const stripe = getStripeClient();
     if (!stripe) {
-      return res.status(500).json({ error: "Stripe client could not be initialized." });
+      return res.status(400).json({ error: "Stripe client could not be initialized." });
     }
 
     const { amount, projectName } = req.body;
-    const unitAmount = Number(amount);
-    if (!Number.isInteger(unitAmount) || unitAmount <= 0) {
-      return res.status(400).json({ error: "amount must be a positive integer in cents." });
+
+    // Validate Amount
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ error: "Invalid amount. Must be a positive finite integer." });
     }
-    const normalizedProjectName =
-      typeof projectName === "string" && projectName.trim().length > 0
-        ? projectName.trim().slice(0, 120)
-        : "Project";
+
+    // Validate and sanitize Project Name
+    if (typeof projectName !== 'string' || !projectName.trim()) {
+      return res.status(400).json({ error: "Invalid project name." });
+    }
+    const cleanProjectName = projectName.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "").substring(0, 100);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -39,21 +47,20 @@ stripeRouter.post("/create-checkout", async (req, res) => {
         {
           price_data: {
             currency: "usd",
-            product_data: { name: `Venture Capital: ${normalizedProjectName}` },
-            unit_amount: unitAmount,
+            product_data: { name: `Venture Capital: ${cleanProjectName}` },
+            unit_amount: amount,
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.origin}/dashboard?success=true`,
-      cancel_url: `${req.headers.origin}/dashboard?canceled=true`,
+      success_url: `${baseUrl}/dashboard?success=true`,
+      cancel_url: `${baseUrl}/dashboard?canceled=true`,
     });
 
     res.json({ url: session.url });
   } catch (error: any) {
     console.error("Stripe Error:", error);
-    res.status(500).json({ error: "Failed to create checkout session." });
-  }
+    res.status(500).json({ error: error.message });
   }
 });

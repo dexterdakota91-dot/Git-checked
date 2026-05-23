@@ -6,9 +6,9 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 // Import extracted routers and services
-import { plaidRouter } from "./src/routes/plaid.js";
-import { stripeRouter } from "./src/routes/stripe.js";
-import { startAutonomyEngine } from "./src/services/autonomyEngine.js";
+import { plaidRouter } from "./src/routes/plaid.ts";
+import { stripeRouter } from "./src/routes/stripe.ts";
+import { startAutonomyEngine } from "./src/services/autonomyEngine.ts";
 
 // Ensure environment variables are loaded
 dotenv.config();
