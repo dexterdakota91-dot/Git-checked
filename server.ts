@@ -31,8 +31,37 @@ const firebaseConfig = {
   messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
 };
-const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+
+let db: any;
+let isDbAdmin = false;
+let adminFieldValue: any;
+
+try {
+  const appletConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
+  if (fs.existsSync(appletConfigPath)) {
+    const appletConfig = JSON.parse(fs.readFileSync(appletConfigPath, "utf-8"));
+    const admin = await import("firebase-admin");
+    const { FieldValue } = await import("firebase-admin/firestore");
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(appletConfig)
+      });
+    }
+    db = admin.firestore();
+    adminFieldValue = FieldValue;
+    isDbAdmin = true;
+    console.log("[Firebase] Initialized Admin SDK from firebase-applet-config.json");
+  }
+} catch (err) {
+  console.warn("[Firebase] Could not initialize Admin SDK, falling back to client SDK", err);
+}
+
+if (!isDbAdmin) {
+  const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+  console.log("[Firebase] Initialized Client SDK");
+}
 
 /**
  * Initialize and start the Express server, background Autonomy Engine, and related API routes.
@@ -87,9 +116,14 @@ async function startServer() {
     }
 
     try {
-      const projectsRef = collection(db, "projects");
-      const q = query(projectsRef, where("isAutonomous", "==", true));
-      const querySnapshot = await getDocs(q);
+      let querySnapshot: any;
+      if (isDbAdmin) {
+        querySnapshot = await db.collection("projects").where("isAutonomous", "==", true).get();
+      } else {
+        const projectsRef = collection(db, "projects");
+        const q = query(projectsRef, where("isAutonomous", "==", true));
+        querySnapshot = await getDocs(q);
+      }
 
       for (const projectDoc of querySnapshot.docs) {
         const project = projectDoc.data();
@@ -157,8 +191,6 @@ async function startServer() {
 
             console.log(`[Autonomy Engine] Executing Action: ${type} for ${project.name}`);
             
-            const projectRef = doc(db, "projects", projectId);
-
             if (type === 'CREATE_AGENT') {
               const newAgent = stripUndefined({
                 ...data,
@@ -170,40 +202,78 @@ async function startServer() {
                 capabilities: data.capabilities || [],
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
-              await updateDoc(projectRef, { 
-                agents: arrayUnion(newAgent),
-                logs: arrayUnion({
+
+              const updateData = {
+                agents: isDbAdmin ? adminFieldValue.arrayUnion(newAgent) : arrayUnion(newAgent),
+                logs: isDbAdmin ? adminFieldValue.arrayUnion({
+                  id: Date.now().toString(),
+                  timestamp: new Date().toISOString(),
+                  type: 'success',
+                  message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
+                  details: `Role: ${data.role || 'Unspecified'}`
+                }) : arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
                   type: 'success',
                   message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
                   details: `Role: ${data.role || 'Unspecified'}`
                 })
-              });
+              };
+
+              if (isDbAdmin) {
+                await db.collection("projects").doc(projectId).update(updateData);
+              } else {
+                await updateDoc(doc(db, "projects", projectId), updateData);
+              }
             } else if (type === 'COMPLETE_TASK') {
               const updatedTasks = (project.tasks || []).map((t: any) => 
                 t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
               );
-              await updateDoc(projectRef, stripUndefined({ 
+
+              const updateData = stripUndefined({
                 tasks: updatedTasks,
-                logs: arrayUnion({
+                logs: isDbAdmin ? adminFieldValue.arrayUnion({
+                  id: Date.now().toString(),
+                  timestamp: new Date().toISOString(),
+                  type: 'success',
+                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                  details: `Task ID: ${data.taskId || 'unknown'}`
+                }) : arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
                   type: 'success',
                   message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
                   details: `Task ID: ${data.taskId || 'unknown'}`
                 })
-              }));
+              });
+
+              if (isDbAdmin) {
+                await db.collection("projects").doc(projectId).update(updateData);
+              } else {
+                await updateDoc(doc(db, "projects", projectId), updateData);
+              }
             } else if (type === 'ADD_LOG') {
-              await updateDoc(projectRef, stripUndefined({ 
-                logs: arrayUnion({
+              const updateData = stripUndefined({
+                logs: isDbAdmin ? adminFieldValue.arrayUnion({
+                  id: Date.now().toString(),
+                  timestamp: new Date().toISOString(),
+                  type: data.type || 'info',
+                  message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
+                  details: data.details || ""
+                }) : arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
                   type: data.type || 'info',
                   message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
                   details: data.details || ""
                 })
-              }));
+              });
+
+              if (isDbAdmin) {
+                await db.collection("projects").doc(projectId).update(updateData);
+              } else {
+                await updateDoc(doc(db, "projects", projectId), updateData);
+              }
             }
           }
           
