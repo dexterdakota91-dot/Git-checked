@@ -6,7 +6,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { Project } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const geminiKey = process.env.GEMINI_API_KEY?.trim() || '';
+const ai = new GoogleGenAI({ apiKey: geminiKey });
 
 export const extractJson = (raw: string) => {
   const cleaned = raw
@@ -28,7 +29,8 @@ export const extractJson = (raw: string) => {
 
 const callAi = async (prompt: string, systemInstruction: string, fallbackData: any) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    const currentKey = process.env.GEMINI_API_KEY?.trim() || '';
+    if (!currentKey) {
       if (process.env.NODE_ENV !== "test") console.warn("GEMINI_API_KEY missing, using fallback.");
       return fallbackData;
     }
