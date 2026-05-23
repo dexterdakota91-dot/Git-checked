@@ -15,12 +15,12 @@ stripeRouter.post("/create-checkout", async (req, res) => {
       if (process.env.DEMO_MODE === "true" || process.env.demo_mode === "true") {
         return res.json({ url: `${req.headers.origin}/dashboard?success=true&demo=true` });
       }
-      return res.status(400).json({ error: "STRIPE_SECRET_KEY is missing. Enable DEMO_MODE=true for simulation." });
+      return res.status(500).json({ error: "STRIPE_SECRET_KEY is missing. Enable DEMO_MODE=true for simulation." });
     }
 
     const stripe = getStripeClient();
     if (!stripe) {
-      return res.status(400).json({ error: "Stripe client could not be initialized." });
+      return res.status(500).json({ error: "Stripe client could not be initialized." });
     }
 
     const { amount, projectName } = req.body;
