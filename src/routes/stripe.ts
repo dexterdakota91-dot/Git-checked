@@ -53,6 +53,7 @@ stripeRouter.post("/create-checkout", async (req, res) => {
     res.json({ url: session.url });
   } catch (error: any) {
     console.error("Stripe Error:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Failed to create checkout session." });
+  }
   }
 });
