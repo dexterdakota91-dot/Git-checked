@@ -178,19 +178,27 @@ async function startServer() {
                 })
               });
             } else if (type === 'COMPLETE_TASK') {
-              const updatedTasks = (project.tasks || []).map((t: any) => 
-                t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
-              );
-              await updateDoc(projectRef, stripUndefined({ 
-                tasks: updatedTasks,
-                logs: arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                  details: `Task ID: ${data.taskId || 'unknown'}`
-                })
-              }));
+              let taskModified = false;
+              const updatedTasks = (project.tasks || []).map((t: any) => {
+                if (t.id === data.taskId && t.status !== 'completed') {
+                  taskModified = true;
+                  return { ...t, status: 'completed', progress: 100 };
+                }
+                return t;
+              });
+
+              if (taskModified) {
+                await updateDoc(projectRef, stripUndefined({
+                  tasks: updatedTasks,
+                  logs: arrayUnion({
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    type: 'success',
+                    message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                    details: `Task ID: ${data.taskId || 'unknown'}`
+                  })
+                }));
+              }
             } else if (type === 'ADD_LOG') {
               await updateDoc(projectRef, stripUndefined({ 
                 logs: arrayUnion({
