@@ -24,7 +24,6 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { StatCard } from '../StatCard';
-import { Project } from '../../types';
 import { REVENUE_DATA } from '../../constants/mockData';
 
 import { useStore } from '../../store/useStore';
@@ -32,7 +31,7 @@ import { useStore } from '../../store/useStore';
 /**
  * Render the mission-control dashboard view containing high-level stats, a revenue chart, a recent-events feed, and an interactive list of active projects.
  *
- * The component reads `projects`, `selectedProject`, and `setSelectedProject` from the application store and conditionally renders an empty state when no projects exist. Project cards select a project and navigate to the project detail tab when clicked. Header controls switch to analytics, venture-dashboard (when available), or the Idea Lab.
+ * The component reads `projects`, `selectedProject,Project`, and `setSelectedProject` from the application store and conditionally renders an empty state when no projects exist. Project cards select a project and navigate to the project detail tab when clicked. Header controls switch to analytics, venture-dashboard (when available), or the Idea Lab.
  *
  * @param setActiveTab - Callback invoked with a tab identifier to change the active UI tab (e.g., `'analytics'`, `'project-detail'`, `'idea-lab'`, `'venture-dashboard'`).
  * @returns The dashboard React element to be rendered.
@@ -42,7 +41,7 @@ export default function DashboardView({
 }: { setActiveTab: (tab: string) => void }) {
   const { 
     projects, 
-    selectedProject, 
+    selectedProject,
     setSelectedProject 
   } = useStore();
 

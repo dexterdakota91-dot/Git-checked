@@ -108,3 +108,8 @@ export interface BusinessIdea {
   }[];
   branding?: Project['branding'];
 }
+
+export interface BrandingUpdateData {
+  name?: string;
+  branding?: Project['branding'];
+}

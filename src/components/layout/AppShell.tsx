@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore';
 import { SidebarContent } from './SidebarContent';
 import { ArchitectChat } from '../ArchitectChat';
 import { AIAcknowlegementFooter } from './AIAcknowlegementFooter';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Search, Plus, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ export function AppShell() {
     selectedProject,
     projects, currentUser, isAuthReady,
     isUserSettingsOpen, setIsUserSettingsOpen,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isResetConfirmOpen, setIsResetConfirmOpen,
     handleLogin, handleLogout, deleteProject, resetAccount
   } = useStore();

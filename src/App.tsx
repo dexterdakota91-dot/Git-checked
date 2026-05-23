@@ -10,12 +10,12 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useFirebaseListeners } from './hooks/useFirebaseListeners';
 import { AppShell } from './components/layout/AppShell';
-import { ArchitectChat } from './components/ArchitectChat';
 import { OnboardingDialog } from './components/OnboardingDialog';
 import { DynamicThemeProvider } from './components/DynamicThemeProvider';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useStore } from './store/useStore';
+import { BrandingUpdateData } from './types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from './lib/firebase';
 
@@ -94,7 +94,7 @@ function AetherisApp() {
     try {
       const projectRef = doc(db, 'projects', selectedProject.id);
       const updatedBranding = { ...(selectedProject.branding || {}) };
-      const updateData: any = {};
+      const updateData: Partial<BrandingUpdateData> = {};
 
       if (type === 'logo') {
         updatedBranding.logoType = value;

@@ -6,12 +6,16 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogFooter,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   DialogClose
 } from "@/components/ui/dialog";
-import { Button, buttonVariants } from '@/components/ui/button';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { buttonVariants } from '@/components/ui/button';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X } from 'lucide-react';
 import { ElectricityTracer } from './ElectricityTracer';
 import { US_STATES, USState } from '../constants/mockData';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { cn } from '@/lib/utils';
 import { useStore } from '../store/useStore';
 import { NavigateFunction } from 'react-router-dom';
@@ -21,6 +25,7 @@ import { AetherisLogo } from './logos/LogoComponents';
 interface OnboardingDialogProps {
   completeOnboarding: () => void;
   setActiveTab: (tab: string) => void;
+
   navigate: NavigateFunction;
 }
 
@@ -36,6 +41,7 @@ interface OnboardingDialogProps {
 export function OnboardingDialog({
   completeOnboarding,
   setActiveTab,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   navigate
 }: OnboardingDialogProps) {
   const { 

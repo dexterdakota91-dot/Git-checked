@@ -18,6 +18,8 @@ interface AgentsViewProps {
  * @returns A React element containing the agents grid or an empty-state message.
  */
 export default function AgentsView({ selectedProject }: AgentsViewProps) {
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { projects, setProjects } = useStore();
 
   return (

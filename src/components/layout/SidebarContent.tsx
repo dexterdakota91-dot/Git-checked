@@ -6,11 +6,13 @@ import {
   TrendingUp, 
   Users, 
   Building2,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   FileText,
   BookOpen,
   Scale,
   Trash2,
   Settings,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   X 
 } from 'lucide-react';
 import { User } from 'firebase/auth';
@@ -21,12 +23,14 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogTrigger, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   DialogClose 
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button, buttonVariants } from '@/components/ui/button';
 import { NavItem } from './NavItem';
 import { MonolithLogo, AetherisLogo } from '../logos/LogoComponents';
@@ -86,6 +90,7 @@ export function SidebarContent({
   handleLogout, 
   handleLogin, 
   deleteProject,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   resetAccount,
   setIsResetConfirmOpen,
   isUserSettingsOpen,

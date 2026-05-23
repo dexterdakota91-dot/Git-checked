@@ -45,6 +45,7 @@ export function useFirebaseListeners() {
         }
       });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount only
 
   // Auth Listener

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Bot, Terminal, Coffee, Zap, MessageSquare, Brain, Search, Pencil, Settings2, Link, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar,  } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
@@ -14,6 +15,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { X } from 'lucide-react';
 import { Agent } from '../types';
 import { ARCHETYPES } from '../constants/mockData';

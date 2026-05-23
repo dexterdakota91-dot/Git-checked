@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db, OperationType, handleFirestoreError } from '../lib/firebase';
-import { doc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
 
 import { AuthSlice, createAuthSlice } from './slices/authSlice';
 import { ChatSlice, createChatSlice } from './slices/chatSlice';

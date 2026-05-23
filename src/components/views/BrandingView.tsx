@@ -1,19 +1,25 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { 
-  Palette, Tag, Globe, Zap, CheckCircle2, ArrowUpRight, Search, ChevronRight, Settings2, Plus, Sparkles
+  Globe, Zap, CheckCircle2, Search, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { TabsContent } from '@/components/ui/tabs';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { LoadingIndicator } from '../LoadingIndicator';
-import { MonolithLogo, OrbitLogo, PrismLogo } from '../logos/LogoComponents';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { PrismLogo } from '../logos/LogoComponents';
 import { cn } from '@/lib/utils';
 import { useStore } from '../../store/useStore';
-import { generateBranding, generateMissionStatements, generatePalettes, generateNames, generateLogoConcepts, generateVoiceAndTone } from '../../services/gemini';
+import { generateMissionStatements, generatePalettes, generateNames, generateLogoConcepts, generateVoiceAndTone } from '../../services/gemini';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { db } from '../../lib/firebase';
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { doc, updateDoc } from 'firebase/firestore';
 
 /**

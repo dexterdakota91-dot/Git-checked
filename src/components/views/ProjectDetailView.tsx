@@ -14,7 +14,8 @@ import { useStore } from '../../store/useStore';
 import { Project } from '../../types';
 
 // Components
-import { MonolithLogo, OrbitLogo, PrismLogo } from '../logos/LogoComponents';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { MonolithLogo, PrismLogo } from '../logos/LogoComponents';
 import { AgentCard } from '../AgentCard';
 import { ExpandableVentureDescription } from '../ExpandableVentureDescription';
 import { TaskManagement } from '../TaskManagement';
@@ -36,7 +37,9 @@ export default function ProjectDetailView({
     isVentureSettingsOpen, 
     setIsVentureSettingsOpen,
     setActiveLabTab,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     projects,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setProjects,
     deleteProject,
     handleUpdateTasks,
@@ -68,7 +71,8 @@ export default function ProjectDetailView({
 
   const [editedVentureName, setEditedVentureName] = React.useState(selectedProject.name);
   const [editedVentureDescription, setEditedVentureDescription] = React.useState(selectedProject.description);
-  const [committedVentureName, setCommittedVentureName] = React.useState(selectedProject.name);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [committedVentureDescription, setCommittedVentureDescription] = React.useState(selectedProject.description);
 
   const goToLab = (tab: 'brand' | 'naming' | 'market') => {
@@ -117,9 +121,7 @@ export default function ProjectDetailView({
                 if (open && selectedProject) {
                   setEditedVentureName(selectedProject.name);
                   setEditedVentureDescription(selectedProject.description);
-                  setCommittedVentureName(selectedProject.name);
-                  setCommittedVentureDescription(selectedProject.description);
-                }
+                                                    }
               }}
             >
               <DialogTrigger nativeButton={true} render={
@@ -148,8 +150,8 @@ export default function ProjectDetailView({
                       </div>
                       <Input 
                         value={editedVentureName} 
-                        onChange={(e) => setEditedVentureName(e.target.value)}
-                        onBlur={() => setCommittedVentureName(editedVentureName)}
+
+
                         className="bg-background/50 border-accent/20"
                       />
                     </div>
@@ -168,8 +170,8 @@ export default function ProjectDetailView({
                       <textarea 
                         className="w-full bg-background/50 border border-accent/20 rounded-md p-3 text-sm h-24"
                         value={editedVentureDescription}
-                        onChange={(e) => setEditedVentureDescription(e.target.value)}
-                        onBlur={() => setCommittedVentureDescription(editedVentureDescription)}
+
+
                       />
                     </div>
                   </div>

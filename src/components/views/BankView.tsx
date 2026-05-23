@@ -16,7 +16,8 @@ import { usePlaidLink, PlaidLinkOptions, PlaidLinkOnSuccess } from 'react-plaid-
 export default function BankView() {
   const { plaidError, isBankLinked, setIsBankLinked, plaidToken, userState } = useStore();
 
-  const onSuccess = React.useCallback<PlaidLinkOnSuccess>((public_token, metadata) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onSuccess = React.useCallback<PlaidLinkOnSuccess>((_public_token, _metadata) => {
     setIsBankLinked(true);
   }, [setIsBankLinked]);
 

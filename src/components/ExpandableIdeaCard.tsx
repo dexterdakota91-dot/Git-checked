@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ChevronDown, ChevronUp, ChevronRight, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';

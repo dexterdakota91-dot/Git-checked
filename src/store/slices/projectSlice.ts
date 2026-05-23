@@ -132,7 +132,7 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
   },
 
   startProject: async (idea: BusinessIdea) => {
-    const { currentUser, projects, refinedTemplates } = get();
+    const { currentUser, refinedTemplates } = get();
     if (!currentUser) {
       set({ showOnboarding: true });
       return;

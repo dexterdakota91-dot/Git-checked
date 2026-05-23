@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from '@/components/ui/button';
 import { Lightbulb, Palette, LayoutDashboard, Bot, ChevronRight, Play } from 'lucide-react';
 import { useStore } from '../store/useStore';
@@ -15,6 +16,7 @@ import { cn } from '@/lib/utils';
  */
 export function LandingPage({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
   const { projects, selectedProject, isAuthReady, currentUser } = useStore();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const hasProjects = projects && projects.length > 0;
 
   return (

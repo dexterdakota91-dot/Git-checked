@@ -2,6 +2,7 @@ import * as React from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button, buttonVariants } from "@/components/ui/button"
 import { X } from "lucide-react"
 

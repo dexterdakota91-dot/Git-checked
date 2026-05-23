@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('../../firebase-applet-config.json', () => ({
   default: {
@@ -76,6 +76,7 @@ describe('handleFirestoreError', () => {
   });
 
   it('should include correct operation info', () => {
+    expect.assertions(2);
     try {
       handleFirestoreError('test', OperationType.CREATE, 'users/123');
     } catch (e: any) {
