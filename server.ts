@@ -21,25 +21,33 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)
+let appletConfig: any = {};
+try {
+  const appletConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
+  if (fs.existsSync(appletConfigPath)) {
+    appletConfig = JSON.parse(fs.readFileSync(appletConfigPath, "utf-8"));
+  }
+} catch {
+  console.warn("[Firebase] Could not read firebase-applet-config.json");
+}
+
 const firebaseConfig = {
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID,
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  firestoreDatabaseId: process.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID || appletConfig.projectId,
+  appId: process.env.VITE_FIREBASE_APP_ID || appletConfig.appId,
+  apiKey: process.env.VITE_FIREBASE_API_KEY || appletConfig.apiKey,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || appletConfig.authDomain,
+  firestoreDatabaseId: process.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || appletConfig.firestoreDatabaseId || "(default)",
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || appletConfig.storageBucket,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || appletConfig.messagingSenderId,
+  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID || appletConfig.measurementId
 };
 
-let db: any;
+let adminDb: any = null;
 let isDbAdmin = false;
 let adminFieldValue: any;
 
 try {
-  const appletConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
-  if (fs.existsSync(appletConfigPath)) {
-    const appletConfig = JSON.parse(fs.readFileSync(appletConfigPath, "utf-8"));
+  if (Object.keys(appletConfig).length > 0) {
     const admin = await import("firebase-admin");
     const { FieldValue } = await import("firebase-admin/firestore");
 
@@ -48,18 +56,18 @@ try {
         credential: admin.credential.cert(appletConfig)
       });
     }
-    db = admin.firestore();
+    adminDb = admin.firestore();
     adminFieldValue = FieldValue;
     isDbAdmin = true;
     console.log("[Firebase] Initialized Admin SDK from firebase-applet-config.json");
   }
-} catch (err) {
-  console.warn("[Firebase] Could not initialize Admin SDK, falling back to client SDK", err);
+} catch {
+  console.warn("[Firebase] Could not initialize Admin SDK, falling back to client SDK");
 }
 
+const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 if (!isDbAdmin) {
-  const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
   console.log("[Firebase] Initialized Client SDK");
 }
 
@@ -118,7 +126,7 @@ async function startServer() {
     try {
       let querySnapshot: any;
       if (isDbAdmin) {
-        querySnapshot = await db.collection("projects").where("isAutonomous", "==", true).get();
+        querySnapshot = await adminDb.collection("projects").where("isAutonomous", "==", true).get();
       } else {
         const projectsRef = collection(db, "projects");
         const q = query(projectsRef, where("isAutonomous", "==", true));
@@ -184,8 +192,8 @@ async function startServer() {
               } else {
                 data = dataStr.replace(/^"(.*)"$/, '$1');
               }
-            } catch (e) {
-              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`, e);
+            } catch {
+              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`);
               continue;
             }
 
@@ -221,7 +229,7 @@ async function startServer() {
               };
 
               if (isDbAdmin) {
-                await db.collection("projects").doc(projectId).update(updateData);
+                await adminDb.collection("projects").doc(projectId).update(updateData);
               } else {
                 await updateDoc(doc(db, "projects", projectId), updateData);
               }
@@ -248,7 +256,7 @@ async function startServer() {
               });
 
               if (isDbAdmin) {
-                await db.collection("projects").doc(projectId).update(updateData);
+                await adminDb.collection("projects").doc(projectId).update(updateData);
               } else {
                 await updateDoc(doc(db, "projects", projectId), updateData);
               }
@@ -270,7 +278,7 @@ async function startServer() {
               });
 
               if (isDbAdmin) {
-                await db.collection("projects").doc(projectId).update(updateData);
+                await adminDb.collection("projects").doc(projectId).update(updateData);
               } else {
                 await updateDoc(doc(db, "projects", projectId), updateData);
               }
