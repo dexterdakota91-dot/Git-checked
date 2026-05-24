@@ -19,13 +19,15 @@ export default defineConfig(({mode}) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes('node_modules')) {
-              return id
-                .toString()
-                .split('node_modules/')[1]
-                .split('/')[0]
-                .toString();
-            }
+            if (!id.includes('node_modules')) return undefined;
+
+            if (id.includes('/firebase/') || id.includes('/@firebase/')) return 'vendor-firebase';
+            if (id.includes('/@google/genai/')) return 'vendor-ai';
+            if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/react-router') || id.includes('/@base-ui/') || id.includes('/lucide-react/') || id.includes('/tailwind-merge/')) return 'vendor-react';
+            if (id.includes('/recharts/') || id.includes('/d3-')) return 'vendor-charts';
+            if (id.includes('/motion/') || id.includes('/framer-motion/')) return 'vendor-motion';
+
+            return undefined;
           },
         },
       },
