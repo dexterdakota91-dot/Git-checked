@@ -1,0 +1,144 @@
+# Deterministic Test Plan: Firebase Config + SDK Path Separation
+
+## Scope
+Validate still-relevant findings against current code for:
+1. Firebase env fallback behavior.
+2. `firestoreDatabaseId` defaulting to `"(default)"`.
+3. Client SDK branch behavior (current code path) and Admin SDK branch behavior (if introduced in a future branch).
+4. Separation of `arrayUnion` paths and related adapter variables/code sites.
+
+---
+
+## A) Frontend env fallback (`src/lib/firebase.ts`)
+
+### Assertion A1: valid `VITE_FIREBASE_*` env values are preferred over applet JSON
+- **Setup**
+  - Set valid `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID`.
+  - Keep `firebase-applet-config.json` placeholder values unchanged.
+  - Code branch: current `src/lib/firebase.ts` config selection block.
+- **Steps**
+  1. Run: `VITE_FIREBASE_API_KEY=real-key VITE_FIREBASE_PROJECT_ID=real-project VITE_FIREBASE_APP_ID=real-app npm run dev`.
+  2. Load the app route that imports `src/lib/firebase.ts`.
+- **Expected Result**
+  - Frontend boots without import-time throw.
+  - Selected config path resolves to env config (`hasValidEnvConfig === true`).
+- **Evidence**
+  - Browser page renders.
+  - No placeholder-crash stack trace in terminal/browser console.
+
+### Assertion A2: if env is invalid and applet config is valid, applet config is used
+- **Setup**
+  - Unset/blank one required env var (e.g., `VITE_FIREBASE_APP_ID`).
+  - Provide non-placeholder values in `firebase-applet-config.json` for `apiKey`, `projectId`, `appId`.
+- **Steps**
+  1. Run: `VITE_FIREBASE_API_KEY=real-key VITE_FIREBASE_PROJECT_ID=real-project VITE_FIREBASE_APP_ID= npm run dev`.
+  2. Load app.
+- **Expected Result**
+  - App boots; selection uses applet JSON (`hasValidEnvConfig === false`, `hasValidAppletConfig === true`).
+- **Evidence**
+  - App renders and Firestore requests execute.
+
+### Assertion A3: when both env and applet configs are invalid, startup is non-fatal
+- **Setup**
+  - Unset required env vars.
+  - Keep placeholder values in `firebase-applet-config.json`.
+- **Steps**
+  1. Run: `npm run dev`.
+  2. Load app.
+- **Expected Result**
+  - No hard throw at import-time from `src/lib/firebase.ts`.
+  - Diagnostic error log appears (except in test mode).
+- **Evidence**
+  - Console contains: `Firebase configuration appears incomplete...`.
+  - UI shell still mounts.
+
+---
+
+## B) `firestoreDatabaseId` fallback behavior
+
+### Assertion B1: `firestoreDatabaseId` defaults to `"(default)"`
+- **Setup**
+  - Leave `VITE_FIRESTORE_DATABASE_ID` unset.
+  - Ensure Firebase app initializes.
+- **Steps**
+  1. Start app via `npm run dev`.
+  2. Exercise a Firestore read path (e.g., route/state that triggers reads in hooks/slices).
+- **Expected Result**
+  - `getFirestore(app, firebaseConfig.firestoreDatabaseId || "(default)")` uses `"(default)"`.
+- **Evidence**
+  - Successful reads/writes against default database; no database-id mismatch errors.
+
+---
+
+## C) Server-side precedence and SDK-branch checks
+
+### Assertion C1: server prefers env config over applet JSON when env values exist
+- **Setup**
+  - Set `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` to valid env values.
+  - Keep applet JSON present.
+  - Code site: `server.ts` `hasEnvConfig` + `initializeApp(hasEnvConfig ? firebaseConfig : (appletConfig || firebaseConfig))`.
+- **Steps**
+  1. Run: `VITE_FIREBASE_API_KEY=real-key VITE_FIREBASE_PROJECT_ID=real-project VITE_FIREBASE_APP_ID=real-app npm run dev`.
+  2. Hit API endpoints that require initialized backend services.
+- **Expected Result**
+  - Backend initializes Firebase from env path (`hasEnvConfig === true`).
+- **Evidence**
+  - Server starts cleanly and API routes respond.
+
+### Assertion C2: server falls back to applet JSON only when env is incomplete
+- **Setup**
+  - Omit one required env var.
+  - Provide valid applet config JSON.
+- **Steps**
+  1. Run server with incomplete env.
+  2. Hit API route to confirm startup completed.
+- **Expected Result**
+  - Startup succeeds via applet fallback.
+- **Evidence**
+  - No Firebase init warning; route responds.
+
+---
+
+## D) SDK path separation (`arrayUnion`, update sites, adapter variables)
+
+### Assertion D1: current client SDK path uses `arrayUnion` from `firebase/firestore`
+- **Setup**
+  - Current branch code in `src/services/autonomyEngine.ts`.
+- **Steps**
+  1. Run tests: `npm test`.
+  2. Trigger autonomy flow that calls update logic.
+- **Expected Result**
+  - `updateDoc(...)` calls in autonomy engine use `arrayUnion(...)` (client SDK path).
+- **Evidence**
+  - Code inspection confirms `arrayUnion` import/usage at `updateDoc` sites.
+
+### Assertion D2: check adapter-style separation points (for harness compatibility)
+- **Setup**
+  - Review code for `updateData`, `adminFieldValue.arrayUnion`, `arrayUnion`, `adminDb`, `db`, `getDocs/admin getDocs`, and `updateDoc` usage.
+- **Steps**
+  1. Inspect current implementation with grep/ripgrep.
+- **Expected Result**
+  - `arrayUnion`, `db`, `getDocs`, and `updateDoc` usage are present in client path.
+  - `adminDb` and `adminFieldValue.arrayUnion` are absent in current branch (no admin-branch implementation here).
+- **Evidence**
+  - `rg` output listing exact symbols and call sites for reviewer verification.
+
+### Assertion D3 (future/admin branch): when Admin SDK branch exists, admin updates must use admin field value helpers
+- **Setup**
+  - Only applicable if/when `adminDb` branch is introduced.
+- **Steps**
+  1. Execute branch that routes writes through Admin SDK.
+  2. Perform update operation equivalent to autonomy append.
+- **Expected Result**
+  - Admin path uses `adminFieldValue.arrayUnion` with `adminDb`.
+  - Client path continues to use `arrayUnion` with `db` + `updateDoc`.
+- **Evidence**
+  - Logs/traces or mocks showing branch choice and helper invoked.
+
+---
+
+## Validation command checklist
+1. `npm test`
+2. `npm run lint` (known unrelated lint failure may remain outside this scope)
+3. Symbol audit:
+   - `rg -n "updateData|adminFieldValue|arrayUnion|adminDb|\bdb\b|getDocs\(|updateDoc\(" src server.ts`
