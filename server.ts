@@ -43,7 +43,8 @@ async function startServer() {
       // ignore
     }
 
-    const firebaseApp = initializeApp(appletConfig || firebaseConfig);
+    const hasEnvConfig = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId);
+    const firebaseApp = initializeApp(hasEnvConfig ? firebaseConfig : (appletConfig || firebaseConfig));
     const db = getFirestore(firebaseApp);
 
     // Start Autonomy Engine

@@ -1,45 +1,64 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  onAuthStateChanged, 
-  User 
+  onAuthStateChanged,
+  User
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  getDocFromServer 
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  getDocFromServer
 } from 'firebase/firestore';
 
-import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
+import firebaseAppletConfig from '../../firebase-applet-config.json' with { type: 'json' };
 
 const placeholders = ['dummy', '12345', 'ABCDEF'];
 const isPlaceholder = (val: string | undefined) => !val || placeholders.some(p => val.includes(p));
 
-if (
-  isPlaceholder(firebaseConfig.projectId) ||
-  isPlaceholder(firebaseConfig.apiKey) ||
-  isPlaceholder(firebaseConfig.appId)
-) {
-  console.error("CRITICAL ERROR: Firebase configuration contains placeholder values.");
-  console.error("Found placeholders in firebase-applet-config.json:");
-  console.error(JSON.stringify(firebaseConfig, null, 2));
-  throw new Error("Invalid Firebase Configuration: Placeholder values detected.");
+const envFirebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string | undefined,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string | undefined,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string | undefined,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string | undefined,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string | undefined,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID as string | undefined,
+  firestoreDatabaseId: import.meta.env.VITE_FIRESTORE_DATABASE_ID as string | undefined,
+};
+
+const hasValidEnvConfig =
+  !isPlaceholder(envFirebaseConfig.projectId) &&
+  !isPlaceholder(envFirebaseConfig.apiKey) &&
+  !isPlaceholder(envFirebaseConfig.appId);
+
+const hasValidAppletConfig =
+  !isPlaceholder(firebaseAppletConfig.projectId) &&
+  !isPlaceholder(firebaseAppletConfig.apiKey) &&
+  !isPlaceholder(firebaseAppletConfig.appId);
+
+const firebaseConfig = hasValidEnvConfig
+  ? envFirebaseConfig
+  : hasValidAppletConfig
+    ? firebaseAppletConfig
+    : envFirebaseConfig;
+
+if (!hasValidEnvConfig && !hasValidAppletConfig && import.meta.env.MODE !== 'test') {
+  console.error('Firebase configuration appears incomplete. Provide VITE_FIREBASE_* env vars or valid firebase-applet-config.json values.');
 }
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || "(default)");
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || '(default)');
 export const googleProvider = new GoogleAuthProvider();
 
 export { getRedirectResult };
@@ -49,7 +68,7 @@ async function testConnection() {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      if (import.meta.env.MODE !== "test") console.error("Please check your Firebase configuration. The client is offline.");
+      if (import.meta.env.MODE !== 'test') console.error('Please check your Firebase configuration. The client is offline.');
     }
   }
 }
@@ -85,8 +104,8 @@ export interface FirestoreErrorInfo {
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   console.error(`Firestore Error [${operationType}] at ${path}:`, error);
-  
-  let errorMessage = "Unknown error";
+
+  let errorMessage = 'Unknown error';
   if (typeof error === 'string') {
     errorMessage = error;
   } else if (error instanceof Error) {
@@ -99,14 +118,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
         errorMessage = JSON.stringify(error);
       } catch (e: any) {
 
-        errorMessage = "Un-stringifiable error object";
+        errorMessage = 'Un-stringifiable error object';
       }
     }
   } else {
     try {
       errorMessage = Object.prototype.toString.call(error);
     } catch (e: any) {
-      errorMessage = "Un-stringifiable error primitive";
+      errorMessage = 'Un-stringifiable error primitive';
     }
   }
 
