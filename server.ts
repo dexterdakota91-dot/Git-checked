@@ -71,7 +71,7 @@ if (!db) {
 async function startServer() {
   const app = express();
   const parsedPort = process.env.PORT !== undefined ? Number(process.env.PORT) : NaN;
-  const PORT = Number.isNaN(parsedPort) ? 3000 : parsedPort;
+  const PORT = Number.isFinite(parsedPort) && Number.isInteger(parsedPort) ? parsedPort : 3000;
 
   app.use(express.json());
 
