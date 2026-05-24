@@ -1,4 +1,4 @@
-import { getFirestore, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
