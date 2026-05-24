@@ -123,17 +123,24 @@ export const startAutonomyEngine = (db: Firestore) => {
                 const updatedTasks = currentTasks.map((t: any) =>
                   t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
                 );
+                const didUpdateTask = currentTasks.some((t: any) => t.id === data.taskId);
 
-                transaction.update(projectRef, stripUndefined({
-                  tasks: updatedTasks,
-                  logs: arrayUnion({
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString(),
-                    type: 'success',
-                    message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                    details: `Task ID: ${data.taskId || 'unknown'}`
-                  })
-                }));
+                const updateData = didUpdateTask
+                  ? {
+                    tasks: updatedTasks,
+                    logs: arrayUnion({
+                      id: Date.now().toString(),
+                      timestamp: new Date().toISOString(),
+                      type: 'success',
+                      message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                      details: `Task ID: ${data.taskId || 'unknown'}`
+                    })
+                  }
+                  : {
+                    tasks: updatedTasks
+                  };
+
+                transaction.update(projectRef, stripUndefined(updateData));
               });
             } else if (type === 'ADD_LOG') {
               await updateDoc(projectRef, stripUndefined({
