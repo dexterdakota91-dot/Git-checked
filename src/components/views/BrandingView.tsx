@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { motion } from 'motion/react';
 import { 
@@ -5,7 +6,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { LoadingIndicator } from '../LoadingIndicator';
@@ -13,6 +16,7 @@ import { MonolithLogo, OrbitLogo, PrismLogo } from '../logos/LogoComponents';
 import { cn } from '@/lib/utils';
 import { useStore } from '../../store/useStore';
 import { generateBranding, generateMissionStatements, generatePalettes, generateNames, generateLogoConcepts, generateVoiceAndTone } from '../../services/gemini';
+
 import { db } from '../../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 

@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { User, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth';
-import { USState } from '../../constants/mockData';
+import { USState, US_STATES } from '../../constants/mockData';
 import { auth, googleProvider } from '../../lib/firebase';
 import { AppState } from '../useStore';
 
@@ -42,7 +42,14 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set) 
   isLoggingIn: false,
   setIsLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
   userState: '',
-  setUserState: (state) => set({ userState: state }),
+  setUserState: (state) => {
+    if (state === '' || (US_STATES as readonly string[]).includes(state as string)) {
+      set({ userState: state });
+    } else {
+      console.warn(`Invalid US state provided: ${state}. Sanitizing to empty string.`);
+      set({ userState: '' });
+    }
+  },
 
   handleLogin: async () => {
     set({ loginError: null, isLoggingIn: true });

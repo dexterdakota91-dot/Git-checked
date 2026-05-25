@@ -1,0 +1,154 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: en-US
+
+tone_instructions: ''
+
+early_access: false
+
+enable_free_tier: true
+
+reviews:
+
+  profile: assertive
+
+  request_changes_workflow: false
+
+  high_level_summary: true
+
+  high_level_summary_placeholder: '@coderabbitai summary'
+
+  auto_title_placeholder: '@coderabbitai'
+
+  review_status: true
+
+  poem: true
+
+  collapse_walkthrough: false
+
+  sequence_diagrams: true
+
+  path_filters: [
+
+  "!**/*.ptxt"
+
+  ]
+
+  path_instructions: [
+  {
+
+  "path": "drafts/*.md",
+
+  "instructions": "These are PHP RFC's to change the PHP language. Do not just consider the grammar of the text, but consider how it might change the language. For example, if a new feature is being added, consider how it might be used, and propose better ideas if you have them."
+
+  }
+
+  ]
+
+  abort_on_close: true
+
+  auto_review:
+
+    enabled: true
+
+    auto_incremental_review: true
+
+    ignore_title_keywords: []
+
+    labels: []
+
+    drafts: false
+
+    base_branches: []
+
+  tools:
+
+    shellcheck:
+      enabled: true
+
+    ruff:
+
+      enabled: true
+
+    markdownlint:
+
+      enabled: true
+
+    github-checks:
+
+      enabled: true
+
+      timeout_ms: 90000
+
+    languagetool:
+
+      enabled: true
+
+      enabled_only: false
+
+      level: default
+
+    biome:
+
+      enabled: true
+
+    hadolint:
+
+      enabled: true
+
+    swiftlint:
+
+      enabled: true
+
+    phpstan:
+
+      enabled: true
+
+      level: default
+
+    golangci-lint:
+
+      enabled: true
+
+    yamllint:
+
+      enabled: true
+
+    gitleaks:
+
+      enabled: true
+
+    checkov:
+
+      enabled: true
+
+    detekt:
+
+      enabled: true
+
+    eslint:
+
+      enabled: true
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+
+  opt_out: false
+
+  learnings:
+
+    scope: auto
+
+  issues:
+
+    scope: auto
+
+  jira:
+
+    project_keys: []
+
+  linear:
+
+    team_keys: []

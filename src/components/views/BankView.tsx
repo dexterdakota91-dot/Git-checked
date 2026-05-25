@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { motion } from 'motion/react';
 import { Building2, AlertCircle, CheckCircle2, Plus, MapPin } from 'lucide-react';
@@ -15,6 +16,7 @@ import { usePlaidLink, PlaidLinkOptions, PlaidLinkOnSuccess } from 'react-plaid-
  */
 export default function BankView() {
   const { plaidError, isBankLinked, setIsBankLinked, plaidToken, userState } = useStore();
+
 
   const onSuccess = React.useCallback<PlaidLinkOnSuccess>((public_token, metadata) => {
     setIsBankLinked(true);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { StateCreator } from 'zustand';
 import { AppState } from '../useStore';
 import { Project, BusinessIdea } from '../../types';

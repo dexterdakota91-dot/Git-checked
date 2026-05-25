@@ -1,8 +1,6 @@
 import admin from "firebase-admin";
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import Stripe from "stripe";
@@ -11,11 +9,11 @@ import { initializeApp, getApps } from "firebase/app";
 import { getFirestore, runTransaction, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
 import fs from "fs";
 
-// Load local overrides first, then fallback to .env
-dotenv.config({ path: ".env.local" });
+// Ensure environment variables are loaded
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
+
 const __dirname = path.dirname(__filename);
 
 // FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)
@@ -58,7 +56,8 @@ try {
  */
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const parsedPort = process.env.PORT !== undefined ? Number(process.env.PORT) : NaN;
+  const PORT = Number.isFinite(parsedPort) && Number.isInteger(parsedPort) ? parsedPort : 3000;
 
   app.use(express.json());
 
@@ -171,8 +170,8 @@ async function startServer() {
               } else {
                 data = dataStr.replace(/^"(.*)"$/, '$1');
               }
-            } catch (e) {
-              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`, e);
+            } catch {
+              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`);
               continue;
             }
 
@@ -297,6 +296,8 @@ async function startServer() {
           console.error(`[Autonomy Engine] Generation error for ${projectId}:`, genError.message);
         }
       }
+
+      await Promise.allSettled(updatePromises);
     } catch (error) {
       console.error("[Autonomy Engine] Critical Failure:", error);
     }
@@ -340,23 +341,15 @@ async function startServer() {
   // API Routes
   app.post("/api/plaid/create-link-token", async (req, res) => {
     try {
-      const client = getPlaidClient();
-      if (!client) {
-        return res.json({ link_token: "demo_link_token_123" });
-      }
-      const response = await client.linkTokenCreate({
-        user: { client_user_id: "user_123" },
-        client_name: "Aetheris Ventures",
-        products: ["auth", "transactions"] as any,
-        country_codes: ["US"] as any,
-        language: "en",
-      });
-      res.json(response.data);
-    } catch (error: any) {
-      console.error("Plaid Error:", error);
-      res.status(500).json({ error: error.message });
+      const fs = await import("fs/promises");
+      const configData = await fs.readFile(
+        path.join(process.cwd(), "firebase-applet-config.json"),
+        "utf8"
+      );
+      appletConfig = JSON.parse(configData);
+    } catch {
+      // ignore
     }
-  });
 
   app.post("/api/stripe/create-checkout", async (req, res) => {
     try {

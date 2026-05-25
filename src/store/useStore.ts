@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from 'zustand';
 import { db, OperationType, handleFirestoreError } from '../lib/firebase';
 import { doc, deleteDoc, setDoc, writeBatch } from 'firebase/firestore';

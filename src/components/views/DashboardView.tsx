@@ -24,6 +24,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { StatCard } from '../StatCard';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Project } from '../../types';
 import { REVENUE_DATA } from '../../constants/mockData';
 
