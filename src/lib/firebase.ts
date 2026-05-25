@@ -21,20 +21,21 @@ import {
   getDocFromServer
 } from 'firebase/firestore';
 
-import firebaseAppletConfig from '../../firebase-applet-config.json' with { type: 'json' };
+import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
 
 const placeholders = ['dummy', '12345', 'ABCDEF'];
 const isPlaceholder = (val: string | undefined) => !val || placeholders.some(p => val.includes(p));
 
-const envFirebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string | undefined,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string | undefined,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string | undefined,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string | undefined,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string | undefined,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID as string | undefined,
-  firestoreDatabaseId: import.meta.env.VITE_FIRESTORE_DATABASE_ID as string | undefined,
-};
+if (
+  isPlaceholder(firebaseConfig.projectId) ||
+  isPlaceholder(firebaseConfig.apiKey) ||
+  isPlaceholder(firebaseConfig.appId)
+) {
+  console.error("CRITICAL ERROR: Firebase configuration contains placeholder values.");
+  console.error("Found placeholders in firebase-applet-config.json:");
+  console.error(JSON.stringify(firebaseConfig, null, 2));
+  throw new Error("Invalid Firebase Configuration: Placeholder values detected.");
+}
 
 const hasValidEnvConfig =
   !isPlaceholder(envFirebaseConfig.projectId) &&
@@ -58,7 +59,7 @@ if (!hasValidEnvConfig && !hasValidAppletConfig && import.meta.env.MODE !== 'tes
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || '(default)');
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || "(default)");
 export const googleProvider = new GoogleAuthProvider();
 
 export { getRedirectResult };
@@ -68,7 +69,7 @@ async function testConnection() {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      if (import.meta.env.MODE !== 'test') console.error('Please check your Firebase configuration. The client is offline.');
+      if (import.meta.env.MODE !== "test") console.error("Please check your Firebase configuration. The client is offline.");
     }
   }
 }
@@ -118,14 +119,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
         errorMessage = JSON.stringify(error);
       } catch (e: any) {
 
-        errorMessage = 'Un-stringifiable error object';
+        errorMessage = "Un-stringifiable error object";
       }
     }
   } else {
     try {
       errorMessage = Object.prototype.toString.call(error);
     } catch (e: any) {
-      errorMessage = 'Un-stringifiable error primitive';
+      errorMessage = "Un-stringifiable error primitive";
     }
   }
 
