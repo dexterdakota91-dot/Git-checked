@@ -105,9 +105,14 @@ async function startServer() {
     }
 
     try {
-      const projectsRef = collection(db, "projects");
-      const q = query(projectsRef, where("isAutonomous", "==", true));
-      const querySnapshot = await getDocs(q);
+      let querySnapshot: any;
+      if (isDbAdmin) {
+        querySnapshot = await adminDb.collection("projects").where("isAutonomous", "==", true).get();
+      } else {
+        const projectsRef = collection(db, "projects");
+        const q = query(projectsRef, where("isAutonomous", "==", true));
+        querySnapshot = await getDocs(q);
+      }
 
       const updatePromises: Promise<any>[] = [];
 
@@ -155,7 +160,7 @@ async function startServer() {
 
           const text = response.text || "";
           // Robust regex to find [ACTION:TYPE:DATA] even if DATA contains brackets or colons
-          const actionMatch = text.match(/\[ACTION:([^:]+):([\s\S]*?)\]\s*$/);
+          const actionMatch = text.match(/\[ACTION:([^:]+):([\s\S]*?)\]\s*$/m) || text.match(/\[ACTION:([^:]+):([\s\S]*?)\]/);
 
           if (actionMatch) {
             const type = actionMatch[1].trim();
@@ -170,15 +175,13 @@ async function startServer() {
               } else {
                 data = dataStr.replace(/^"(.*)"$/, '$1');
               }
-            } catch (e) {
-              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`, e);
+            } catch {
+              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`);
               continue;
             }
 
             console.log(`[Autonomy Engine] Executing Action: ${type} for ${project.name}`);
             
-            const projectRef = doc(db, "projects", projectId);
-
             if (type === 'CREATE_AGENT') {
               const newAgent = stripUndefined({
                 ...data,

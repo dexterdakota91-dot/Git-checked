@@ -26,16 +26,10 @@ export const extractJson = (raw: string) => {
   }
 };
 
-const isValidApiKey = (key?: string) => {
-  if (!key) return false;
-  if (key === "free" || key === "TODO" || key.length < 10) return false;
-  return true;
-};
-
 const callAi = async (prompt: string, systemInstruction: string, fallbackData: any) => {
   try {
-    if (!isValidApiKey(process.env.GEMINI_API_KEY)) {
-      if (process.env.NODE_ENV !== "test") console.warn("GEMINI_API_KEY missing or placeholder, using fallback.");
+    if (!process.env.GEMINI_API_KEY) {
+      if (process.env.NODE_ENV !== "test") console.warn("GEMINI_API_KEY missing, using fallback.");
       return fallbackData;
     }
 
