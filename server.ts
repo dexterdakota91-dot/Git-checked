@@ -9,6 +9,7 @@ import Stripe from "stripe";
 import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
+import admin from "firebase-admin";
 
 import fs from "fs";
 
@@ -21,54 +22,43 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)
-let appletConfig: any = {};
+// FIX: Detect if service-account JSON is available to init Admin SDK; otherwise fallback to client SDK
+let appletConfig;
 try {
-  const appletConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
-  if (fs.existsSync(appletConfigPath)) {
-    appletConfig = JSON.parse(fs.readFileSync(appletConfigPath, "utf-8"));
-  }
-} catch {
-  console.warn("[Firebase] Could not read firebase-applet-config.json");
+  const configRaw = fs.readFileSync(path.join(process.cwd(), "firebase-applet-config.json"), "utf8");
+  appletConfig = JSON.parse(configRaw);
+} catch (e) {
+  // Config not found or invalid
 }
 
-const firebaseConfig = {
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID || appletConfig.projectId,
-  appId: process.env.VITE_FIREBASE_APP_ID || appletConfig.appId,
-  apiKey: process.env.VITE_FIREBASE_API_KEY || appletConfig.apiKey,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || appletConfig.authDomain,
-  firestoreDatabaseId: process.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || appletConfig.firestoreDatabaseId || "(default)",
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || appletConfig.storageBucket,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || appletConfig.messagingSenderId,
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID || appletConfig.measurementId
-};
-
-let adminDb: any = null;
-let isDbAdmin = false;
-let adminFieldValue: any;
-
-try {
-  if (Object.keys(appletConfig).length > 0) {
-    const admin = await import("firebase-admin");
-    const { FieldValue } = await import("firebase-admin/firestore");
-
-    if (!admin.apps.length) {
+let db;
+if (appletConfig) {
+  try {
+    if (admin.apps.length === 0) {
       admin.initializeApp({
         credential: admin.credential.cert(appletConfig)
       });
     }
-    adminDb = admin.firestore();
-    adminFieldValue = FieldValue;
-    isDbAdmin = true;
-    console.log("[Firebase] Initialized Admin SDK from firebase-applet-config.json");
+    db = admin.firestore();
+  } catch (err) {
+    // Config may be missing private_key or invalid for Admin SDK
   }
-} catch {
-  console.warn("[Firebase] Could not initialize Admin SDK, falling back to client SDK");
 }
 
-const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
-if (!isDbAdmin) {
-  console.log("[Firebase] Initialized Client SDK");
+if (!db) {
+  // FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)
+  const firebaseConfig = {
+    projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+    appId: process.env.VITE_FIREBASE_APP_ID,
+    apiKey: process.env.VITE_FIREBASE_API_KEY,
+    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+    firestoreDatabaseId: process.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID,
+    storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
+  };
+  const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 }
 
 /**
@@ -80,7 +70,8 @@ if (!isDbAdmin) {
  */
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const parsedPort = process.env.PORT !== undefined ? Number(process.env.PORT) : NaN;
+  const PORT = Number.isFinite(parsedPort) && Number.isInteger(parsedPort) ? parsedPort : 3000;
 
   app.use(express.json());
 
@@ -132,6 +123,8 @@ async function startServer() {
         const q = query(projectsRef, where("isAutonomous", "==", true));
         querySnapshot = await getDocs(q);
       }
+
+      const updatePromises: Promise<any>[] = [];
 
       for (const projectDoc of querySnapshot.docs) {
         const project = projectDoc.data();
@@ -210,86 +203,40 @@ async function startServer() {
                 capabilities: data.capabilities || [],
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
-
-              if (isDbAdmin) {
-                const updateData = {
-                  agents: adminFieldValue.arrayUnion(newAgent),
-                  logs: adminFieldValue.arrayUnion({
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString(),
-                    type: 'success',
-                    message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
-                    details: `Role: ${data.role || 'Unspecified'}`
-                  })
-                };
-                await adminDb.collection("projects").doc(projectId).update(updateData);
-              } else {
-                const updateData = {
-                  agents: arrayUnion(newAgent),
-                  logs: arrayUnion({
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString(),
-                    type: 'success',
-                    message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
-                    details: `Role: ${data.role || 'Unspecified'}`
-                  })
-                };
-                await updateDoc(doc(db, "projects", projectId), updateData);
-              }
+              updatePromises.push(updateDoc(projectRef, {
+                agents: arrayUnion(newAgent),
+                logs: arrayUnion({
+                  id: Date.now().toString(),
+                  timestamp: new Date().toISOString(),
+                  type: 'success',
+                  message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
+                  details: `Role: ${data.role || 'Unspecified'}`
+                })
+              }));
             } else if (type === 'COMPLETE_TASK') {
               const updatedTasks = (project.tasks || []).map((t: any) => 
                 t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
               );
-
-              if (isDbAdmin) {
-                const updateData = stripUndefined({
-                  tasks: updatedTasks,
-                  logs: adminFieldValue.arrayUnion({
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString(),
-                    type: 'success',
-                    message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                    details: `Task ID: ${data.taskId || 'unknown'}`
-                  })
-                });
-                await adminDb.collection("projects").doc(projectId).update(updateData);
-              } else {
-                const updateData = stripUndefined({
-                  tasks: updatedTasks,
-                  logs: arrayUnion({
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString(),
-                    type: 'success',
-                    message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                    details: `Task ID: ${data.taskId || 'unknown'}`
-                  })
-                });
-                await updateDoc(doc(db, "projects", projectId), updateData);
-              }
+              updatePromises.push(updateDoc(projectRef, stripUndefined({
+                tasks: updatedTasks,
+                logs: arrayUnion({
+                  id: Date.now().toString(),
+                  timestamp: new Date().toISOString(),
+                  type: 'success',
+                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                  details: `Task ID: ${data.taskId || 'unknown'}`
+                })
+              })));
             } else if (type === 'ADD_LOG') {
-              if (isDbAdmin) {
-                const updateData = stripUndefined({
-                  logs: adminFieldValue.arrayUnion({
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString(),
-                    type: data.type || 'info',
-                    message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
-                    details: data.details || ""
-                  })
-                });
-                await adminDb.collection("projects").doc(projectId).update(updateData);
-              } else {
-                const updateData = stripUndefined({
-                  logs: arrayUnion({
-                    id: Date.now().toString(),
-                    timestamp: new Date().toISOString(),
-                    type: data.type || 'info',
-                    message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
-                    details: data.details || ""
-                  })
-                });
-                await updateDoc(doc(db, "projects", projectId), updateData);
-              }
+              updatePromises.push(updateDoc(projectRef, stripUndefined({
+                logs: arrayUnion({
+                  id: Date.now().toString(),
+                  timestamp: new Date().toISOString(),
+                  type: data.type || 'info',
+                  message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
+                  details: data.details || ""
+                })
+              })));
             }
           }
           
@@ -311,6 +258,8 @@ async function startServer() {
           console.error(`[Autonomy Engine] Generation error for ${projectId}:`, genError.message);
         }
       }
+
+      await Promise.allSettled(updatePromises);
     } catch (error) {
       console.error("[Autonomy Engine] Critical Failure:", error);
     }
