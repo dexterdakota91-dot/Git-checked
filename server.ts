@@ -233,13 +233,7 @@ async function startServer() {
 
                   const updateData = stripUndefined({
                     tasks: updatedTasks,
-                    logs: admin.apps.length > 0 ? admin.firestore.FieldValue.arrayUnion({
-                      id: Date.now().toString(),
-                      timestamp: new Date().toISOString(),
-                      type: 'success',
-                      message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                      details: `Task ID: ${data.taskId || 'unknown'}`
-                    }) : arrayUnion({
+                    logs: aUnion({
                       id: Date.now().toString(),
                       timestamp: new Date().toISOString(),
                       type: 'success',
