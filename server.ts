@@ -70,9 +70,8 @@ if (!db) {
  */
 async function startServer() {
   const app = express();
-  const portValue = process.env.PORT;
-  const parsedPort = portValue && portValue.trim() !== "" ? Number(portValue) : NaN;
-  const PORT = Number.isFinite(parsedPort) && Number.isInteger(parsedPort) && parsedPort >= 0 && parsedPort <= 65535 ? parsedPort : 3000;
+  const parsedPort = process.env.PORT !== undefined ? Number(process.env.PORT) : NaN;
+  const PORT = Number.isFinite(parsedPort) && Number.isInteger(parsedPort) ? parsedPort : 3000;
 
   app.use(express.json());
 
@@ -119,6 +118,8 @@ async function startServer() {
       const projectsRef = collection(db, "projects");
       const q = query(projectsRef, where("isAutonomous", "==", true));
       const querySnapshot = await getDocs(q);
+
+      const updatePromises: Promise<any>[] = [];
 
       for (const projectDoc of querySnapshot.docs) {
         const project = projectDoc.data();
@@ -199,7 +200,7 @@ async function startServer() {
                 capabilities: data.capabilities || [],
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
-              await updateDoc(projectRef, { 
+              updatePromises.push(updateDoc(projectRef, {
                 agents: arrayUnion(newAgent),
                 logs: arrayUnion({
                   id: Date.now().toString(),
@@ -208,12 +209,12 @@ async function startServer() {
                   message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
                   details: `Role: ${data.role || 'Unspecified'}`
                 })
-              });
+              }));
             } else if (type === 'COMPLETE_TASK') {
               const updatedTasks = (project.tasks || []).map((t: any) => 
                 t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
               );
-              await updateDoc(projectRef, stripUndefined({ 
+              updatePromises.push(updateDoc(projectRef, stripUndefined({
                 tasks: updatedTasks,
                 logs: arrayUnion({
                   id: Date.now().toString(),
@@ -222,9 +223,9 @@ async function startServer() {
                   message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
                   details: `Task ID: ${data.taskId || 'unknown'}`
                 })
-              }));
+              })));
             } else if (type === 'ADD_LOG') {
-              await updateDoc(projectRef, stripUndefined({ 
+              updatePromises.push(updateDoc(projectRef, stripUndefined({
                 logs: arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
@@ -232,7 +233,7 @@ async function startServer() {
                   message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
                   details: data.details || ""
                 })
-              }));
+              })));
             }
           }
           
@@ -254,6 +255,8 @@ async function startServer() {
           console.error(`[Autonomy Engine] Generation error for ${projectId}:`, genError.message);
         }
       }
+
+      await Promise.allSettled(updatePromises);
     } catch (error) {
       console.error("[Autonomy Engine] Critical Failure:", error);
     }
