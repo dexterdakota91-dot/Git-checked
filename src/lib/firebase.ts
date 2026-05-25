@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
-  onAuthStateChanged, 
-  User 
+  onAuthStateChanged,
+  User
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  getDocFromServer 
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
+  getDocFromServer
 } from 'firebase/firestore';
 
 import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
@@ -35,6 +35,26 @@ if (
   console.error("Found placeholders in firebase-applet-config.json:");
   console.error(JSON.stringify(firebaseConfig, null, 2));
   throw new Error("Invalid Firebase Configuration: Placeholder values detected.");
+}
+
+const hasValidEnvConfig =
+  !isPlaceholder(envFirebaseConfig.projectId) &&
+  !isPlaceholder(envFirebaseConfig.apiKey) &&
+  !isPlaceholder(envFirebaseConfig.appId);
+
+const hasValidAppletConfig =
+  !isPlaceholder(firebaseAppletConfig.projectId) &&
+  !isPlaceholder(firebaseAppletConfig.apiKey) &&
+  !isPlaceholder(firebaseAppletConfig.appId);
+
+const firebaseConfig = hasValidEnvConfig
+  ? envFirebaseConfig
+  : hasValidAppletConfig
+    ? firebaseAppletConfig
+    : envFirebaseConfig;
+
+if (!hasValidEnvConfig && !hasValidAppletConfig && import.meta.env.MODE !== 'test') {
+  console.error('Firebase configuration appears incomplete. Provide VITE_FIREBASE_* env vars or valid firebase-applet-config.json values.');
 }
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -85,8 +105,8 @@ export interface FirestoreErrorInfo {
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   console.error(`Firestore Error [${operationType}] at ${path}:`, error);
-  
-  let errorMessage = "Unknown error";
+
+  let errorMessage = 'Unknown error';
   if (typeof error === 'string') {
     errorMessage = error;
   } else if (error instanceof Error) {

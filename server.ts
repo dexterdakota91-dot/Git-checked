@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import Stripe from "stripe";
@@ -13,8 +11,7 @@ import admin from "firebase-admin";
 
 import fs from "fs";
 
-// Load local overrides first, then fallback to .env
-dotenv.config({ path: ".env.local" });
+// Ensure environment variables are loaded
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,13 +58,6 @@ if (!db) {
   db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 }
 
-/**
- * Initialize and start the Express server, background Autonomy Engine, and related API routes.
- *
- * Sets up middleware, lazy-initialized clients (Gemini, Stripe, Plaid), the periodic Autonomy Engine
- * that advances autonomous projects in Firestore, endpoints for Plaid link-token and Stripe checkout,
- * and development/production static hosting (Vite dev middleware in dev, serving `dist` in production).
- */
 async function startServer() {
   const app = express();
   const parsedPort = process.env.PORT !== undefined ? Number(process.env.PORT) : NaN;
@@ -300,62 +290,30 @@ async function startServer() {
   // API Routes
   app.post("/api/plaid/create-link-token", async (req, res) => {
     try {
-      const client = getPlaidClient();
-      if (!client) {
-        return res.json({ link_token: "demo_link_token_123" });
-      }
-      const response = await client.linkTokenCreate({
-        user: { client_user_id: "user_123" },
-        client_name: "Aetheris Ventures",
-        products: ["auth", "transactions"] as any,
-        country_codes: ["US"] as any,
-        language: "en",
-      });
-      res.json(response.data);
-    } catch (error: any) {
-      console.error("Plaid Error:", error);
-      res.status(500).json({ error: error.message });
+      const fs = await import("fs/promises");
+      const configData = await fs.readFile(
+        path.join(process.cwd(), "firebase-applet-config.json"),
+        "utf8"
+      );
+      appletConfig = JSON.parse(configData);
+    } catch {
+      // ignore
     }
-  });
 
-  app.post("/api/stripe/create-checkout", async (req, res) => {
-    try {
-      if (!process.env.STRIPE_SECRET_KEY) {
-        if (process.env.DEMO_MODE === "true" || process.env.demo_mode === "true") {
-          return res.json({ url: `${req.headers.origin}/dashboard?success=true&demo=true` });
-        }
-        return res.status(400).json({ error: "STRIPE_SECRET_KEY is missing. Enable DEMO_MODE=true for simulation." });
-      }
+    const hasEnvConfig = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId);
+    const firebaseApp = initializeApp(hasEnvConfig ? firebaseConfig : (appletConfig || firebaseConfig));
+    const db = getFirestore(firebaseApp);
 
-      const stripe = getStripeClient();
-      if (!stripe) {
-        return res.status(400).json({ error: "Stripe client could not be initialized." });
-      }
+    // Start Autonomy Engine
+    startAutonomyEngine(db);
 
-      const { amount, projectName } = req.body;
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "usd",
-              product_data: { name: `Venture Capital: ${projectName}` },
-              unit_amount: amount,
-            },
-            quantity: 1,
-          },
-        ],
-        mode: "payment",
-        success_url: `${req.headers.origin}/dashboard?success=true`,
-        cancel_url: `${req.headers.origin}/dashboard?canceled=true`,
-      });
+  } catch (err) {
+    console.warn("Failed to initialize Firebase for Autonomy Engine:", err);
+  }
 
-      res.json({ url: session.url });
-    } catch (error: any) {
-      console.error("Stripe Error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
+  // Mount API Routes
+  app.use("/api/plaid", plaidRouter);
+  app.use("/api/stripe", stripeRouter);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

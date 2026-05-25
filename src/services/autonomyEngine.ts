@@ -1,77 +1,44 @@
-import { collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, arrayUnion, query, where, Firestore, runTransaction } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Recursively remove undefined values for Firestore compatibility
-const stripUndefined = (obj: any): any => {
-  if (Array.isArray(obj)) {
-    return obj.map(stripUndefined);
-  } else if (obj !== null && typeof obj === 'object') {
-    return Object.entries(obj).reduce((acc: any, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = stripUndefined(value);
-      }
-      return acc;
-    }, {});
+export const startAutonomyEngine = (db: Firestore) => {
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("[Autonomy Engine] GEMINI_API_KEY is missing. Aborting engine startup.");
+    return;
   }
-  return obj;
-};
 
-const isValidApiKey = (key?: string) => {
-  if (!key) return false;
-  if (key === "free" || key === "TODO" || key.length < 10) return false;
-  return true;
-};
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-export function startAutonomyEngine(
-  db: any,
-  adminDb: any = null,
-  isDbAdmin: boolean = false,
-  adminFieldValue: any = null
-) {
-  const getGenAI = () => {
-    const apiKey = process.env.GEMMY_3 || process.env.GEMINI_API_KEY || process.env.gemini_api_key;
-    if (!isValidApiKey(apiKey)) return null;
-    return new GoogleGenAI({ apiKey });
-  };
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  const stripUndefined = (obj: any) => JSON.parse(JSON.stringify(obj));
 
-  // Autonomy Engine State
+  let isAutonomyRunning = false;
   let nextAutonomyRun = 0;
 
-  // Autonomy Engine
   const runAutonomyEngine = async () => {
+    if (isAutonomyRunning) return;
     if (Date.now() < nextAutonomyRun) return;
 
-    console.log("[Autonomy Engine] Heartbeat: Checking for autonomous ventures...");
-    const ai = getGenAI();
-    if (!ai) {
-      console.warn("[Autonomy Engine] Gemini API Key missing. Background activity suspended.");
-      return;
-    }
+    isAutonomyRunning = true;
 
     try {
-      let querySnapshot: any;
-      if (isDbAdmin) {
-        querySnapshot = await adminDb.collection("projects").where("isAutonomous", "==", true).get();
-      } else {
-        const projectsRef = collection(db, "projects");
-        const q = query(projectsRef, where("isAutonomous", "==", true));
-        querySnapshot = await getDocs(q);
+      const q = query(collection(db, "projects"), where("isAutonomous", "==", true));
+      const querySnapshot = await getDocs(q);
+
+      const activeProjects = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+
+      if (activeProjects.length > 0) {
+        console.log(`[Autonomy Engine] Awakening. Found ${activeProjects.length} active projects.`);
       }
 
-      for (const projectDoc of querySnapshot.docs) {
-        const project = projectDoc.data();
-        const projectId = projectDoc.id;
-
-        console.log(`[Autonomy Engine] Advancing Venture: ${project.name} (${projectId})`);
-
-        // Create Context for Gemini
-        const completedTasks = project.tasks?.filter((t: any) => t.status === 'completed').length || 0;
-        const totalTasks = project.tasks?.length || 0;
+      for (const project of activeProjects) {
+        const projectId = project.id;
+        const tasks = project.tasks || [];
+        const totalTasks = tasks.length || 0;
+        const completedTasks = tasks.filter((t: any) => t.status === 'completed').length || 0;
 
         const contextStr = `
-          Active Venture: ${project.name}
+          Project Name: ${project.name}
           Mission: ${project.branding?.missionStatement || 'Not set'}
           Current Status: ${project.status}
           Roadmap Progress: ${completedTasks}/${totalTasks} tasks completed.
@@ -82,19 +49,19 @@ export function startAutonomyEngine(
         try {
           const response = await ai.models.generateContent({
             model: "gemini-2.0-flash",
-            contents: `You are the Aetheris Ventures Business Architect running in PERSISTENT AUTONOMY MODE. 
+            contents: `You are the Aetheris Ventures Business Architect running in PERSISTENT AUTONOMY MODE.
             Your goal is to advance this venture while the user is offline.
-            
+
             ${contextStr}
-            
-            Based on the current state, determine the most critical next step. 
+
+            Based on the current state, determine the most critical next step.
             You MUST output an ACTION block to advance the project.
-            
+
             Types:
             - CREATE_AGENT: { name: string, role: string, specialty: string, capabilities: string[] }
             - COMPLETE_TASK: { taskId: string, logMessage: string }
             - ADD_LOG: { type: 'info' | 'success' | 'thought' | 'decision', message: string, details?: string }
-            
+
             Output your thought process clearly, then end with the [ACTION:...] block.`,
             config: {
               systemInstruction: "You are an elite business architect that executes tasks autonomously. Always output a single [ACTION:TYPE:JSON_DATA] block at the end. JSON_DATA must be valid, parseable JSON with NO trailing commas."
@@ -115,12 +82,14 @@ export function startAutonomyEngine(
               } else {
                 data = dataStr.replace(/^"(.*)"$/, '$1');
               }
-            } catch {
-              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`);
+            } catch (e) {
+              console.error(`[Autonomy Engine] Failed to parse action data for ${projectId}. Data: ${dataStr}`, e);
               continue;
             }
 
             console.log(`[Autonomy Engine] Executing Action: ${type} for ${project.name}`);
+
+            const projectRef = doc(db, "projects", projectId);
 
             if (type === 'CREATE_AGENT') {
               const newAgent = stripUndefined({
@@ -133,78 +102,56 @@ export function startAutonomyEngine(
                 capabilities: data.capabilities || [],
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
-
-              const updateData = {
-                agents: isDbAdmin ? adminFieldValue.arrayUnion(newAgent) : arrayUnion(newAgent),
-                logs: isDbAdmin ? adminFieldValue.arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
-                  details: `Role: ${data.role || 'Unspecified'}`
-                }) : arrayUnion({
+              await updateDoc(projectRef, {
+                agents: arrayUnion(newAgent),
+                logs: arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
                   type: 'success',
                   message: `AUTONOMOUS SPAWN: ${data.name || 'Unknown Agent'} initialized.`,
                   details: `Role: ${data.role || 'Unspecified'}`
                 })
-              };
-
-              if (isDbAdmin) {
-                await adminDb.collection("projects").doc(projectId).update(updateData);
-              } else {
-                await updateDoc(doc(db, "projects", projectId), updateData);
-              }
+              });
             } else if (type === 'COMPLETE_TASK') {
-              const updatedTasks = (project.tasks || []).map((t: any) =>
-                t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
-              );
+              await runTransaction(db, async (transaction) => {
+                const docSnap = await transaction.get(projectRef);
+                if (!docSnap.exists()) {
+                  throw new Error("Project does not exist!");
+                }
+                const currentData = docSnap.data();
+                const currentTasks = currentData.tasks || [];
+                const updatedTasks = currentTasks.map((t: any) =>
+                  t.id === data.taskId ? { ...t, status: 'completed', progress: 100 } : t
+                );
+                const didUpdateTask = currentTasks.some((t: any) => t.id === data.taskId);
 
-              const updateData = stripUndefined({
-                tasks: updatedTasks,
-                logs: isDbAdmin ? adminFieldValue.arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                  details: `Task ID: ${data.taskId || 'unknown'}`
-                }) : arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: 'success',
-                  message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
-                  details: `Task ID: ${data.taskId || 'unknown'}`
-                })
+                const updateData = didUpdateTask
+                  ? {
+                    tasks: updatedTasks,
+                    logs: arrayUnion({
+                      id: Date.now().toString(),
+                      timestamp: new Date().toISOString(),
+                      type: 'success',
+                      message: `AUTONOMOUS COMPLETION: ${data.logMessage || 'Milestone reached.'}`,
+                      details: `Task ID: ${data.taskId || 'unknown'}`
+                    })
+                  }
+                  : {
+                    tasks: updatedTasks
+                  };
+
+                transaction.update(projectRef, stripUndefined(updateData));
               });
-
-              if (isDbAdmin) {
-                await adminDb.collection("projects").doc(projectId).update(updateData);
-              } else {
-                await updateDoc(doc(db, "projects", projectId), updateData);
-              }
             } else if (type === 'ADD_LOG') {
-              const updateData = stripUndefined({
-                logs: isDbAdmin ? adminFieldValue.arrayUnion({
-                  id: Date.now().toString(),
-                  timestamp: new Date().toISOString(),
-                  type: data.type || 'info',
-                  message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
-                  details: data.details || ""
-                }) : arrayUnion({
+              await updateDoc(projectRef, stripUndefined({
+                logs: arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
                   type: data.type || 'info',
                   message: `[AI ARCHITECT]: ${data.message || 'System update'}`,
                   details: data.details || ""
                 })
-              });
-
-              if (isDbAdmin) {
-                await adminDb.collection("projects").doc(projectId).update(updateData);
-              } else {
-                await updateDoc(doc(db, "projects", projectId), updateData);
-              }
+              }));
             }
           }
 
@@ -227,12 +174,12 @@ export function startAutonomyEngine(
       }
     } catch (error) {
       console.error("[Autonomy Engine] Critical Failure:", error);
+    } finally {
+      isAutonomyRunning = false;
     }
   };
 
-  // Start the heartbeat (Every 10 minutes)
   const HEARTBEAT_INTERVAL = 10 * 60 * 1000;
   setInterval(runAutonomyEngine, HEARTBEAT_INTERVAL);
-  // Optional: Run immediately on startup
   setTimeout(runAutonomyEngine, 5000);
-}
+};
