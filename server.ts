@@ -115,8 +115,6 @@ async function startServer() {
         const project = projectDoc.data();
         const projectId = projectDoc.id;
 
-        console.log(`[Autonomy Engine] Advancing Venture: ${project.name} (${projectId})`);
-
         // Create Context for Gemini
         const completedTasks = project.tasks?.filter((t: any) => t.status === 'completed').length || 0;
         const totalTasks = project.tasks?.length || 0;
