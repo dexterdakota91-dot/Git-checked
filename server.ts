@@ -344,6 +344,7 @@ async function startServer() {
     } catch {
       // ignore
     }
+  });
 
   app.post("/api/stripe/create-checkout", async (req, res) => {
     try {
