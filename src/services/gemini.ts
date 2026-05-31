@@ -27,10 +27,14 @@ export const extractJson = (raw: string) => {
   }
 };
 
+const isValidApiKey = (key?: string) => {
+  if (!key || key.length < 10) return false;
+  return true;
+};
+
 const callAi = async (prompt: string, systemInstruction: string, fallbackData: any) => {
   try {
-    const currentKey = process.env.GEMINI_API_KEY?.trim() || '';
-    if (!currentKey) {
+    if (!isValidApiKey(process.env.GEMINI_API_KEY?.trim())) {
       if (process.env.NODE_ENV !== "test") console.warn("GEMINI_API_KEY missing, using fallback.");
       return fallbackData;
     }
