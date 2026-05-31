@@ -21,19 +21,25 @@ import {
   getDocFromServer
 } from 'firebase/firestore';
 
-import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
+import firebaseAppletConfig from '../../firebase-applet-config.json' with { type: 'json' };
+const envFirebaseConfig = {
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
 
 const placeholders = ['dummy', '12345', 'ABCDEF'];
 const isPlaceholder = (val: string | undefined) => !val || placeholders.some(p => val.includes(p));
 
 if (
-  isPlaceholder(firebaseConfig.projectId) ||
-  isPlaceholder(firebaseConfig.apiKey) ||
-  isPlaceholder(firebaseConfig.appId)
+  isPlaceholder(firebaseAppletConfig.projectId) ||
+  isPlaceholder(firebaseAppletConfig.apiKey) ||
+  isPlaceholder(firebaseAppletConfig.appId)
 ) {
   console.error("CRITICAL ERROR: Firebase configuration contains placeholder values.");
   console.error("Found placeholders in firebase-applet-config.json:");
-  console.error(JSON.stringify(firebaseConfig, null, 2));
+  console.error(JSON.stringify(firebaseAppletConfig, null, 2));
   throw new Error("Invalid Firebase Configuration: Placeholder values detected.");
 }
 
@@ -59,7 +65,7 @@ if (!hasValidEnvConfig && !hasValidAppletConfig && import.meta.env.MODE !== 'tes
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || "(default)");
+export const db = getFirestore(app, (firebaseAppletConfig as any).firestoreDatabaseId || "(default)");
 export const googleProvider = new GoogleAuthProvider();
 
 export { getRedirectResult };
