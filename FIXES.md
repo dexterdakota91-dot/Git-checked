@@ -53,3 +53,4 @@ DEMO_MODE=true
 
 APP_URL=https://your-app.vercel.app
 ```
+- Preexisting issue: ReferenceError: envFirebaseConfig is not defined / Cannot access `firebaseConfig` before initialization in src/lib/firebase.ts and test suite
