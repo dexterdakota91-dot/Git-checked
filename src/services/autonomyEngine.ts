@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, updateDoc, arrayUnion, query, where, Firestore, runTransaction } from "firebase/firestore";
+import { collection, getDocs, doc, arrayUnion, query, where, Firestore, runTransaction, writeBatch } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
 
 export const startAutonomyEngine = (db: Firestore) => {
@@ -30,6 +30,9 @@ export const startAutonomyEngine = (db: Firestore) => {
       if (activeProjects.length > 0) {
         console.log(`[Autonomy Engine] Awakening. Found ${activeProjects.length} active projects.`);
       }
+
+      let batch = writeBatch(db);
+      let opsCount = 0;
 
       for (const project of activeProjects) {
         const projectId = project.id;
@@ -102,7 +105,8 @@ export const startAutonomyEngine = (db: Firestore) => {
                 capabilities: data.capabilities || [],
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
-              await updateDoc(projectRef, {
+              opsCount++;
+              batch.update(projectRef, {
                 agents: arrayUnion(newAgent),
                 logs: arrayUnion({
                   id: Date.now().toString(),
@@ -143,7 +147,8 @@ export const startAutonomyEngine = (db: Firestore) => {
                 transaction.update(projectRef, stripUndefined(updateData));
               });
             } else if (type === 'ADD_LOG') {
-              await updateDoc(projectRef, stripUndefined({
+              opsCount++;
+              batch.update(projectRef, stripUndefined({
                 logs: arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
@@ -171,6 +176,18 @@ export const startAutonomyEngine = (db: Firestore) => {
           }
           console.error(`[Autonomy Engine] Generation error for ${projectId}:`, genError.message);
         }
+
+        if (opsCount >= 450) {
+          await batch.commit();
+          console.log(`[Autonomy Engine] Committed intermediate batch of ${opsCount} autonomous actions.`);
+          batch = writeBatch(db);
+          opsCount = 0;
+        }
+      }
+
+      if (opsCount > 0) {
+        await batch.commit();
+        console.log(`[Autonomy Engine] Committed final batch of ${opsCount} autonomous actions.`);
       }
     } catch (error) {
       console.error("[Autonomy Engine] Critical Failure:", error);
