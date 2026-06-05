@@ -8,6 +8,7 @@ import { Configuration, PlaidApi, PlaidEnvironments } from "plaid";
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore, runTransaction, collection, query, where, getDocs, updateDoc, doc, arrayUnion } from "firebase/firestore";
 import fs from "fs";
+import { fileURLToPath } from 'url';
 
 // Ensure environment variables are loaded
 dotenv.config();
@@ -344,6 +345,7 @@ async function startServer() {
     } catch {
       // ignore
     }
+  });
 
   app.post("/api/stripe/create-checkout", async (req, res) => {
     try {
