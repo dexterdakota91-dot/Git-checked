@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, updateDoc, arrayUnion, query, where, Firestore, runTransaction } from "firebase/firestore";
+import { collection, getDocs, doc, arrayUnion, query, where, Firestore, runTransaction, writeBatch } from "firebase/firestore";
 import { GoogleGenAI } from "@google/genai";
 
 export const startAutonomyEngine = (db: Firestore) => {
@@ -22,6 +22,10 @@ export const startAutonomyEngine = (db: Firestore) => {
     isAutonomyRunning = true;
 
     try {
+      let batch = writeBatch(db);
+      let batchCount = 0;
+      const MAX_BATCH_SIZE = 400;
+
       const q = query(collection(db, "projects"), where("isAutonomous", "==", true));
       const querySnapshot = await getDocs(q);
 
@@ -102,7 +106,7 @@ export const startAutonomyEngine = (db: Firestore) => {
                 capabilities: data.capabilities || [],
                 avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.name || 'agent'}&backgroundColor=transparent`,
               });
-              await updateDoc(projectRef, {
+              batch.update(projectRef, {
                 agents: arrayUnion(newAgent),
                 logs: arrayUnion({
                   id: Date.now().toString(),
@@ -112,6 +116,7 @@ export const startAutonomyEngine = (db: Firestore) => {
                   details: `Role: ${data.role || 'Unspecified'}`
                 })
               });
+              batchCount++;
             } else if (type === 'COMPLETE_TASK') {
               await runTransaction(db, async (transaction) => {
                 const docSnap = await transaction.get(projectRef);
@@ -143,7 +148,7 @@ export const startAutonomyEngine = (db: Firestore) => {
                 transaction.update(projectRef, stripUndefined(updateData));
               });
             } else if (type === 'ADD_LOG') {
-              await updateDoc(projectRef, stripUndefined({
+              batch.update(projectRef, stripUndefined({
                 logs: arrayUnion({
                   id: Date.now().toString(),
                   timestamp: new Date().toISOString(),
@@ -152,7 +157,14 @@ export const startAutonomyEngine = (db: Firestore) => {
                   details: data.details || ""
                 })
               }));
+              batchCount++;
             }
+          }
+
+          if (batchCount >= MAX_BATCH_SIZE) {
+            await batch.commit();
+            batch = writeBatch(db);
+            batchCount = 0;
           }
 
           await sleep(2000);
@@ -171,6 +183,10 @@ export const startAutonomyEngine = (db: Firestore) => {
           }
           console.error(`[Autonomy Engine] Generation error for ${projectId}:`, genError.message);
         }
+      }
+
+      if (batchCount > 0) {
+        await batch.commit();
       }
     } catch (error) {
       console.error("[Autonomy Engine] Critical Failure:", error);

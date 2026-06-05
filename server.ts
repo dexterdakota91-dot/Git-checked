@@ -1,5 +1,6 @@
 import admin from "firebase-admin";
 import express from "express";
+import { createServer as createViteServer } from "vite";
 import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
@@ -12,9 +13,9 @@ import fs from "fs";
 // Ensure environment variables are loaded
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
+// const __filename = fileURLToPath(import.meta.url);
 
-const __dirname = path.dirname(__filename);
+// const __dirname = path.dirname(__filename);
 
 // FIX: Guard against Firebase duplicate initialization (throws if called twice e.g. HMR)
 const firebaseConfig = {
@@ -41,7 +42,7 @@ try {
   } else {
     throw new Error("No admin config found");
   }
-} catch (e) {
+} catch {
   const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
 }
@@ -291,7 +292,6 @@ async function startServer() {
         }
       }
 
-      await Promise.allSettled(updatePromises);
     } catch (error) {
       console.error("[Autonomy Engine] Critical Failure:", error);
     }
@@ -335,15 +335,28 @@ async function startServer() {
   // API Routes
   app.post("/api/plaid/create-link-token", async (req, res) => {
     try {
-      const fs = await import("fs/promises");
-      const configData = await fs.readFile(
-        path.join(process.cwd(), "firebase-applet-config.json"),
-        "utf8"
-      );
-      appletConfig = JSON.parse(configData);
-    } catch {
-      // ignore
+      const plaidClient = getPlaidClient();
+      if (!plaidClient) {
+        if (process.env.DEMO_MODE === "true" || process.env.demo_mode === "true") {
+           return res.json({ link_token: "link-sandbox-12345" });
+        }
+        return res.status(500).json({ error: "Plaid client not initialized. Ensure PLAID_CLIENT_ID and PLAID_SECRET are set." });
+      }
+
+      const createTokenResponse = await plaidClient.linkTokenCreate({
+        user: { client_user_id: req.body.userId || "user_good" },
+        client_name: "Aetheris Ventures",
+        products: ["transactions"] as any,
+        country_codes: ["US"] as any,
+        language: "en",
+      });
+
+      res.json(createTokenResponse.data);
+    } catch (error) {
+      console.error("Error creating link token:", error);
+      res.status(500).json({ error: "Failed to create link token" });
     }
+  });
 
   app.post("/api/stripe/create-checkout", async (req, res) => {
     try {

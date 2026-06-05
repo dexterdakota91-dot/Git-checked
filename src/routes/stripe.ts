@@ -39,7 +39,7 @@ stripeRouter.post("/create-checkout", async (req, res) => {
     if (typeof projectName !== 'string' || !projectName.trim()) {
       return res.status(400).json({ error: "Invalid project name." });
     }
-    const cleanProjectName = projectName.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "").substring(0, 100);
+    const cleanProjectName = projectName.trim().replace(/[\\x00-\\x1F\\x7F-\\x9F]/g, "").substring(0, 100);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],

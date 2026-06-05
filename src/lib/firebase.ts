@@ -21,21 +21,18 @@ import {
   getDocFromServer
 } from 'firebase/firestore';
 
-import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
+import firebaseAppletConfig from '../../firebase-applet-config.json' with { type: 'json' };
 
 const placeholders = ['dummy', '12345', 'ABCDEF'];
 const isPlaceholder = (val: string | undefined) => !val || placeholders.some(p => val.includes(p));
 
-if (
-  isPlaceholder(firebaseConfig.projectId) ||
-  isPlaceholder(firebaseConfig.apiKey) ||
-  isPlaceholder(firebaseConfig.appId)
-) {
-  console.error("CRITICAL ERROR: Firebase configuration contains placeholder values.");
-  console.error("Found placeholders in firebase-applet-config.json:");
-  console.error(JSON.stringify(firebaseConfig, null, 2));
-  throw new Error("Invalid Firebase Configuration: Placeholder values detected.");
-}
+const envFirebaseConfig = {
+  projectId: import.meta.env?.VITE_FIREBASE_PROJECT_ID,
+  appId: import.meta.env?.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env?.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN,
+  firestoreDatabaseId: import.meta.env?.VITE_FIREBASE_FIRESTORE_DATABASE_ID,
+};
 
 const hasValidEnvConfig =
   !isPlaceholder(envFirebaseConfig.projectId) &&
@@ -53,7 +50,20 @@ const firebaseConfig = hasValidEnvConfig
     ? firebaseAppletConfig
     : envFirebaseConfig;
 
-if (!hasValidEnvConfig && !hasValidAppletConfig && import.meta.env.MODE !== 'test') {
+if (
+  isPlaceholder(firebaseConfig.projectId) ||
+  isPlaceholder(firebaseConfig.apiKey) ||
+  isPlaceholder(firebaseConfig.appId)
+) {
+  console.error("CRITICAL ERROR: Firebase configuration contains placeholder values.");
+  console.error("Found placeholders in effective config:");
+  console.error(JSON.stringify(firebaseConfig, null, 2));
+  if (import.meta.env?.MODE !== 'test') {
+      throw new Error("Invalid Firebase Configuration: Placeholder values detected.");
+  }
+}
+
+if (!hasValidEnvConfig && !hasValidAppletConfig && import.meta.env?.MODE !== 'test') {
   console.error('Firebase configuration appears incomplete. Provide VITE_FIREBASE_* env vars or valid firebase-applet-config.json values.');
 }
 
@@ -69,7 +79,7 @@ async function testConnection() {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      if (import.meta.env.MODE !== "test") console.error("Please check your Firebase configuration. The client is offline.");
+      if (import.meta.env?.MODE !== "test") console.error("Please check your Firebase configuration. The client is offline.");
     }
   }
 }
