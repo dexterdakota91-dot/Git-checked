@@ -27,9 +27,6 @@ export const startAutonomyEngine = (db: Firestore) => {
 
       const activeProjects = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
 
-      if (activeProjects.length > 0) {
-        console.log(`[Autonomy Engine] Awakening. Found ${activeProjects.length} active projects.`);
-      }
 
       for (const project of activeProjects) {
         const projectId = project.id;
@@ -87,7 +84,6 @@ export const startAutonomyEngine = (db: Firestore) => {
               continue;
             }
 
-            console.log(`[Autonomy Engine] Executing Action: ${type} for ${project.name}`);
 
             const projectRef = doc(db, "projects", projectId);
 
